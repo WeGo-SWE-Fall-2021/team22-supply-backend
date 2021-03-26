@@ -75,6 +75,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             responseString = json.dumps(vehicles).encode('utf-8')
             self.wfile.write(responseString)
 
+        client.close()
 
 
 
