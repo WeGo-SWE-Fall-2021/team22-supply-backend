@@ -2,6 +2,7 @@ import sys
 # Import common services backend to access database
 sys.path.insert(1, '../team22-common-services-backend')
 
+from urllib import parse
 import json
 from http.server import HTTPServer
 from http.server import BaseHTTPRequestHandler
@@ -31,9 +32,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             'message': 'Request not found'
         }
 
-        if '/request-name' in path:
-            # Handle request here
-            print('Handle request here')
 
         self.send_response(status)
         self.send_header("Content-Type", "text/html")
@@ -42,8 +40,42 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(responseString)
         client.close()
 
+
+
     def do_GET(self):
-        return
+        cloud = 'supply'
+        client = initMongoFromCloud(cloud)
+        db = client['team22_' + cloud]
+        path = self.path
+
+
+        if '/api/v1/order' in path:
+            url = self.getRequestURI()
+            parse.urlsplit(url)
+            parse.parse_qs(parse.urlsplit(url).query)
+            parameters = dict(parse.parse_qsl(parse.urlsplit(url).query))
+            try:
+                responseBody = { 'orderNum': parameters.get('orderNum') }
+                status = 200 #request is found
+
+            except:
+                status = 404
+
+            self.send_response(status)
+            self.send_header("Content-Type", "text/html")
+            self.end_headers()
+            responseString = json.dumps(responseBody).encode('utf-8')
+            self.wfile.write(responseString)
+
+        if '/api/v1/returnVehicle' in path:
+            vehicles = {"response" : "obviously worked"}
+            self.send_response(202)
+            self.send_header("Content-Type", "text/html")
+            self.end_headers()
+            responseString = json.dumps(vehicles).encode('utf-8')
+            self.wfile.write(responseString)
+
+
 
 
 def main():
