@@ -43,11 +43,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
 
     def do_GET(self):
-        cloud = 'supply'
-        client = initMongoFromCloud(cloud)
-        db = client['team22_' + cloud]
         path = self.path
-
+        status = 404  # HTTP Request: Not found
 
         if '/api/v1/order' in path:
             url = self.getRequestURI()
@@ -67,15 +64,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             responseString = json.dumps(responseBody).encode('utf-8')
             self.wfile.write(responseString)
 
-        if '/api/v1/returnVehicle' in path:
-            vehicles = {"response" : "obviously worked"}
-            self.send_response(202)
-            self.send_header("Content-Type", "text/html")
-            self.end_headers()
-            responseString = json.dumps(vehicles).encode('utf-8')
-            self.wfile.write(responseString)
-
-        client.close()
 
 
 
