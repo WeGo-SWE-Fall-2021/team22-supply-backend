@@ -1,6 +1,7 @@
 import sys
 # Import common services backend to access database
 sys.path.insert(1, '../team22-common-services-backend')
+sys.path.insert(1, '../common-services-backend')
 
 from urllib import parse
 import json
@@ -74,7 +75,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-        self.wfile.write(response)
+        self.wfile.write(response.encode())
 
 
 
