@@ -75,7 +75,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-        self.wfile.write(response)
+        self.wfile.write(response.encode())
 
 
 
