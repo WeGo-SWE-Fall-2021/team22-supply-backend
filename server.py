@@ -52,7 +52,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             parse.parse_qs(parse.urlsplit(url).query)
             parameters = dict(parse.parse_qsl(parse.urlsplit(url).query))
             try:
-                responseBody = { 'orderNum': parameters.get('orderNum') }
+                responseBody = {'orderNum': parameters.get('orderNum')}
                 status = 200 #request is found
 
             except:
@@ -64,14 +64,11 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             responseString = json.dumps(responseBody).encode('utf-8')
             self.wfile.write(responseString)
 
-        if '/returnVehicle' in path:
-            responseBody = {"response": "success" }
+        elif '/returnVehicle' in path:
             status = 200
             self.send_response(status)
-            self.send_header("Content-Type", "text/html")
             self.end_headers()
-            responseString = json.dumps(responseBody).encode('utf-8')
-            self.wfile.write(responseString)
+            self.wfile.write('Hello World')
 
 
 
