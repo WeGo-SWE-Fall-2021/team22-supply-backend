@@ -44,31 +44,37 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = self.path
-        status = 404  # HTTP Request: Not found
+        #status = 404  # HTTP Request: Not found
 
-        if '/order' in path:
-            url = self.getRequestURI()
-            parse.urlsplit(url)
-            parse.parse_qs(parse.urlsplit(url).query)
-            parameters = dict(parse.parse_qsl(parse.urlsplit(url).query))
-            try:
-                responseBody = {'orderNum': parameters.get('orderNum')}
-                status = 200 #request is found
+        #if '/api/v1/order' in path:
+            #url = self.getRequestURI()
+            #parse.urlsplit(url)
+            #parse.parse_qs(parse.urlsplit(url).query)
+            #parameters = dict(parse.parse_qsl(parse.urlsplit(url).query))
+            #try:
+             #   responseBody = {'orderNum': parameters.get('orderNum')}
+            #    status = 200 #request is found
 
-            except:
-                status = 404
+            #except:
+             #   status = 404
 
-            self.send_response(status)
-            self.send_header("Content-Type", "text/html")
-            self.end_headers()
-            responseString = json.dumps(responseBody).encode('utf-8')
-            self.wfile.write(responseString)
+            #self.send_response(status)
+            #self.send_header("Content-Type", "text/html")
+            #self.end_headers()
+            #esponseString = json.dumps(responseBody).encode('utf-8')
+            #self.wfile.write(responseString)
 
-        elif '/returnVehicle' in path:
+        if '/returnVehicle' in path:
             status = 200
-            self.send_response(status)
-            self.end_headers()
-            self.wfile.write('Hello World')
+            response = 'Hello World'
+        else:
+            status = 400
+            response = 'didnt find path'
+
+        self.send_response(status)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+        self.wfile.write(response)
 
 
 
