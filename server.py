@@ -7,7 +7,7 @@ from urllib import parse
 import json
 from http.server import HTTPServer
 from http.server import BaseHTTPRequestHandler
-from MongoUtils import initMongoFromCloud
+#from MongoUtils import initMongoFromCloud
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -25,9 +25,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         status = 404  # HTTP Request: Not found
         postData = self.extract_POST_Body()  # store POST data into a dictionary
         path = self.path
-        cloud = 'supply'
-        client = initMongoFromCloud(cloud)
-        db = client['team22_' + cloud]
+        #cloud = 'supply'
+        #client = initMongoFromCloud(cloud)
+        #db = client['team22_' + cloud]
         responseBody = {
             'status': 'failed',
             'message': 'Request not found'
@@ -39,7 +39,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         responseString = json.dumps(responseBody).encode('utf-8')
         self.wfile.write(responseString)
-        client.close()
+        #client.close()
 
 
 
@@ -67,16 +67,17 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         if '/returnVehicle' in path:
             status = 200
-            response = 'Hello World'
+            response = {'hello': 'world', 'received': 'ok'}
+
         else:
             status = 400
-            response = 'didnt find path'
+            response = {'received': 'nope' }
 
         self.send_response(status)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-        self.wfile.write(response.encode())
-
+        responseString = json.dumps(response).encode('utf-8')
+        self.wfile.write(responseString)
 
 
 
