@@ -46,7 +46,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         path = self.path
         status = 404  # HTTP Request: Not found
 
-        if '/api/v1/order' in path:
+        if '/order' in path:
             url = self.getRequestURI()
             parse.urlsplit(url)
             parse.parse_qs(parse.urlsplit(url).query)
@@ -63,6 +63,16 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
             responseString = json.dumps(responseBody).encode('utf-8')
             self.wfile.write(responseString)
+
+        if '/returnVehicle' in path:
+            responseBody = {"response": "success" }
+            status = 200
+            self.send_response(status)
+            self.send_header("Content-Type", "text/html")
+            self.end_headers()
+            responseString = json.dumps(responseBody).encode('utf-8')
+            self.wfile.write(responseString)
+
 
 
 
