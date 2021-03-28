@@ -84,7 +84,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header('Content-type', 'application/json')
         self.end_headers()
-        responseString = json.dumps(response)
+        responseString = json.dumps(response).encode('utf-8')
         self.wfile.write(responseString)
         client.close()
 
