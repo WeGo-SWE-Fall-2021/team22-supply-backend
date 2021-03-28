@@ -1,13 +1,12 @@
-from urllib import parse
 import json
 import sys
-from http.server import HTTPServer
-from http.server import BaseHTTPRequestHandler
-from MongoUtils import initMongoFromCloud
-
 # Allow importing files from other directories
 sys.path.insert(1, '../team22-common-services-backend')
 sys.path.insert(1, '../common-services-backend')
+from urllib import parse
+from http.server import HTTPServer
+from http.server import BaseHTTPRequestHandler
+from MongoUtils import initMongoFromCloud
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
