@@ -7,7 +7,7 @@ from urllib import parse
 import json
 from http.server import HTTPServer
 from http.server import BaseHTTPRequestHandler
-from MongoUtils import initMongoFromCloud
+#from MongoUtils import initMongoFromCloud
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -66,17 +66,27 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             #self.wfile.write(responseString)
 
         if '/returnVehicle' in path:
+            cloud = 'supply'
+            client = initMongoFromCloud(cloud)
+            db = client['team22_' + cloud]
             status = 200
-            response = 'Hello World'
+            #response = {'hello': 'world', 'received': 'ok'}
+            # Now creating a Cursor instance using find() function
+            cursor = db.Vehicle.find()
+            # Converting cursor to the list of dictionaries
+            list_cur = list(cursor)
+            response = list_cur
+
         else:
             status = 400
-            response = 'didnt find path'
+            response = {'received': 'nope' }
 
         self.send_response(status)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-        self.wfile.write(response.encode())
-
+        responseString = json.dumps(response).encode('utf-8')
+        self.wfile.write(responseString)
+        client.close()
 
 
 
