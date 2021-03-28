@@ -72,11 +72,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             status = 200
             #response = {'hello': 'world', 'received': 'ok'}
             # Now creating a Cursor instance using find() function
-            cursor = db.Vehicle.find({"vehicleID": 123})
+            vehicleID = int(123)
+            cursor = db.Vehicle.find({"vehicleID": vehicleID})
             # Converting cursor to the list of dictionaries
-            #list_cur = list(cursor)
-            vehicle = cursor.next()
-            response = vehicle
+            list_cur = list(cursor)
+            #vehicle = cursor.next()
+            response = list_cur
         else:
             status = 400
             response = {'received': 'nope' }
