@@ -7,7 +7,7 @@ from urllib import parse
 import json
 from http.server import HTTPServer
 from http.server import BaseHTTPRequestHandler
-#from MongoUtils import initMongoFromCloud
+from MongoUtils import initMongoFromCloud
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
