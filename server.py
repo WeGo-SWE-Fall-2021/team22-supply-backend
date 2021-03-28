@@ -7,7 +7,7 @@ from urllib import parse
 import json
 from http.server import HTTPServer
 from http.server import BaseHTTPRequestHandler
-from MongoUtils import initMongoFromCloud
+#from MongoUtils import initMongoFromCloud
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -45,7 +45,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = self.path
-        status = 404  # HTTP Request: Not found
+        status = 404
 
         #if '/api/v1/order' in path:
             #url = self.getRequestURI()
@@ -74,7 +74,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # Now creating a Cursor instance using find() function
             cursor = db.Vehicle.find()
             # Converting cursor to the list of dictionaries
-            list_cur = list(cursor)
+            list_cur = cursor
             response = list_cur
 
         else:
