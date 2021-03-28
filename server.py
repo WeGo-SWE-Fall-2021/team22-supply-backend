@@ -45,7 +45,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = self.path
-        #status = 404  # HTTP Request: Not found
+        status = 404  # HTTP Request: Not found
 
         #if '/api/v1/order' in path:
             #url = self.getRequestURI()
