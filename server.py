@@ -80,6 +80,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             response = vehicles
 
 
+        elif '/vehicleHeartbeat' in path:
+            status = 200
+            response = {'Heartbeat' : 'Received'}
+            # capture vehicle update, update supply DB
+            # if vehcicleID == vehcicleID connected to incoming order
+                # respond with route for vehicle
+
         else:
             status = 400
             response = {'received': 'nope' }
