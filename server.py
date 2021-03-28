@@ -25,9 +25,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         status = 404  # HTTP Request: Not found
         postData = self.extract_POST_Body()  # store POST data into a dictionary
         path = self.path
-        #cloud = 'supply'
-        #client = initMongoFromCloud(cloud)
-        #db = client['team22_' + cloud]
+        cloud = 'supply'
+        client = initMongoFromCloud(cloud)
+        db = client['team22_' + cloud]
         responseBody = {
             'status': 'failed',
             'message': 'Request not found'
@@ -39,7 +39,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         responseString = json.dumps(responseBody).encode('utf-8')
         self.wfile.write(responseString)
-        #client.close()
+        client.close()
 
 
 
@@ -66,8 +66,16 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             #self.wfile.write(responseString)
 
         if '/returnVehicle' in path:
+            cloud = 'supply'
+            client = initMongoFromCloud(cloud)
+            db = client['team22_' + cloud]
             status = 200
-            response = {'hello': 'world', 'received': 'ok'}
+            #response = {'hello': 'world', 'received': 'ok'}
+            # Now creating a Cursor instance using find() function
+            cursor = db.Vehicle.find()
+            # Converting cursor to the list of dictionaries
+            list_cur = list(cursor)
+            response = list_cur
 
         else:
             status = 400
@@ -78,6 +86,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         responseString = json.dumps(response).encode('utf-8')
         self.wfile.write(responseString)
+        client.close()
 
 
 
