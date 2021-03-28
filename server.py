@@ -1,13 +1,13 @@
-import sys
-# Import common services backend to access database
-sys.path.insert(1, '../team22-common-services-backend')
-sys.path.insert(1, '../common-services-backend')
-
 from urllib import parse
 import json
+import sys
 from http.server import HTTPServer
 from http.server import BaseHTTPRequestHandler
 from MongoUtils import initMongoFromCloud
+
+# Allow importing files from other directories
+sys.path.insert(1, '../team22-common-services-backend')
+sys.path.insert(1, '../common-services-backend')
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -33,7 +33,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             'message': 'Request not found'
         }
 
-
         self.send_response(status)
         self.send_header("Content-Type", "text/html")
         self.end_headers()
@@ -41,36 +40,34 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(responseString)
         client.close()
 
-
-
     def do_GET(self):
         path = self.path
         status = 404
+        cloud = 'supply'
+        client = initMongoFromCloud(cloud)
+        db = client['team22_' + cloud]
 
-        #if '/api/v1/order' in path:
-            #url = self.getRequestURI()
-            #parse.urlsplit(url)
-            #parse.parse_qs(parse.urlsplit(url).query)
-            #parameters = dict(parse.parse_qsl(parse.urlsplit(url).query))
-            #try:
-             #   responseBody = {'orderNum': parameters.get('orderNum')}
-            #    status = 200 #request is found
+        # if '/api/v1/order' in path:
+        # url = self.getRequestURI()
+        # parse.urlsplit(url)
+        # parse.parse_qs(parse.urlsplit(url).query)
+        # parameters = dict(parse.parse_qsl(parse.urlsplit(url).query))
+        # try:
+        #   responseBody = {'orderNum': parameters.get('orderNum')}
+        #    status = 200 #request is found
 
-            #except:
-             #   status = 404
+        # except:
+        #   status = 404
 
-            #self.send_response(status)
-            #self.send_header("Content-Type", "text/html")
-            #self.end_headers()
-            #esponseString = json.dumps(responseBody).encode('utf-8')
-            #self.wfile.write(responseString)
+        # self.send_response(status)
+        # self.send_header("Content-Type", "text/html")
+        # self.end_headers()
+        # responseString = json.dumps(responseBody).encode('utf-8')
+        # self.wfile.write(responseString)
 
         if '/returnVehicle' in path:
-            cloud = 'supply'
-            client = initMongoFromCloud(cloud)
-            db = client['team22_' + cloud]
             status = 200
-            #response = {'hello': 'world', 'received': 'ok'}
+            # response = {'hello': 'world', 'received': 'ok'}
             vehicleID = int(123)
             cursor = db.Vehicle.find({"vehicleID": vehicleID})
             vehicles = []
@@ -79,17 +76,16 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             response = vehicles
 
-
-        elif '/vehicleHeartbeat' in path:
-            status = 200
-            response = {'Heartbeat' : 'Received'}
-            # capture vehicle update, update supply DB
-            # if vehcicleID == vehcicleID connected to incoming order
-                # respond with route for vehicle
+        elif '/vehicleHeartbeat' in path:
+            status = 200
+            response = {'Heartbeat': 'Received'}
+            # capture vehicle update, update supply DB
+            # if vehicleID == vehicleID connected to incoming order
+            # respond with route for vehicle
 
         else:
             status = 400
-            response = {'received': 'nope' }
+            response = {'received': 'nope'}
 
         self.send_response(status)
         self.send_header('Content-type', 'application/json')
@@ -97,8 +93,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         responseString = json.dumps(response).encode('utf-8')
         self.wfile.write(responseString)
         client.close()
-
-
 
 
 def main():
