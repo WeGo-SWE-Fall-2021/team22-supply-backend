@@ -74,7 +74,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # Now creating a Cursor instance using find() function
             cursor = db.Vehicle.find()
             # Converting cursor to the list of dictionaries
-            list_cur = list(cursor)
+            list_cur = cursor
             response = list_cur
 
         else:
