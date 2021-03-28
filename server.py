@@ -70,12 +70,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             client = initMongoFromCloud(cloud)
             db = client['team22_' + cloud]
             status = 200
-            #response = {'hello': 'world', 'received': 'ok'}
+            response = {'hello': 'world', 'received': 'ok'}
             # Now creating a Cursor instance using find() function
-            cursor = db.Vehicle.find({"vehicleID": 123})
+            #cursor = db.Vehicle.find({"vehicleID": 123})
             # Converting cursor to the list of dictionaries
             #list_cur = list(cursor)
-            response = cursor
+            #response = cursor
 
         else:
             status = 400
