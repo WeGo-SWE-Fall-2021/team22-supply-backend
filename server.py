@@ -68,10 +68,11 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             status = 200
             # response = {'hello': 'world', 'received': 'ok'}
             #vehicleID = int(123)
-            cursor = db.Vehicle.find({}, {'vehicleID': 1, 'status': 1, 'FleetID': 1})
+            cursor = db.Vehicle.find({}, {'_id': 0, 'vehicleID': 1, 'status': 1, 'FleetID': 1})
             vehicles = []
             for vehicle in cursor:
-                vehicles.append(vehicle)
+                vehicles.append({ "vehicleID": vehicle["vehicleID"], "status": vehicle["status"],
+                                  "FeetID": vehicle["FleetID"]})
             response = vehicles
 
         elif '/vehicleHeartbeat' in path:
