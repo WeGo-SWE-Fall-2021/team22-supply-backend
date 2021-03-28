@@ -7,7 +7,7 @@ from urllib import parse
 import json
 from http.server import HTTPServer
 from http.server import BaseHTTPRequestHandler
-#from MongoUtils import initMongoFromCloud
+from MongoUtils import initMongoFromCloud
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -74,7 +74,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # Now creating a Cursor instance using find() function
             cursor = db.Vehicle.find()
             # Converting cursor to the list of dictionaries
-            list_cur = cursor
+            list_cur = list(cursor)
             response = list_cur
 
         else:
