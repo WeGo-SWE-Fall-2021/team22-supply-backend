@@ -46,23 +46,23 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         client = initMongoFromCloud(cloud)
         db = client['team22_' + cloud]
 
-        # if '/api/v1/order' in path:
-        # url = self.getRequestURI()
-        # parse.urlsplit(url)
-        # parse.parse_qs(parse.urlsplit(url).query)
-        # parameters = dict(parse.parse_qsl(parse.urlsplit(url).query))
-        # try:
-        #   responseBody = {'orderNum': parameters.get('orderNum')}
-        #    status = 200 #request is found
+        if '/order' in path:
+            url = self.getRequestURI()
+            parse.urlsplit(url)
+            parse.parse_qs(parse.urlsplit(url).query)
+            parameters = dict(parse.parse_qsl(parse.urlsplit(url).query))
+            try:
+                responseBody = {'orderNum': parameters.get('orderNum')}
+                status = 200 #request is found
 
-        # except:
-        #   status = 404
+            except:
+                status = 404
 
-        # self.send_response(status)
-        # self.send_header("Content-Type", "text/html")
-        # self.end_headers()
-        # responseString = json.dumps(responseBody).encode('utf-8')
-        # self.wfile.write(responseString)
+            self.send_response(status)
+            self.send_header("Content-Type", "text/html")
+            self.end_headers()
+            responseString = json.dumps(responseBody).encode('utf-8')
+            self.wfile.write(responseString)
 
         if '/returnVehicle' in path:
             status = 200
@@ -72,7 +72,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             vehicles = []
             for vehicle in cursor:
                 vehicles.append({ "vehicleID": vehicle["vehicleID"], "status": vehicle["status"],
-                                  "FeetID": vehicle["FleetID"]})
+                                  "FleetID": vehicle["FleetID"]})
             response = vehicles
 
         elif '/vehicleHeartbeat' in path:
