@@ -41,6 +41,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = self.path
+        print(path)
         status = 404
         cloud = 'supply'
         client = initMongoFromCloud(cloud)
@@ -48,18 +49,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         response = {}
         
         if '/order' in path:
-            response = {"response" : "hi blake"}
-            status = 200
-            #url = self.getRequestURI()
-            #arse.urlsplit(url)
-            #parse.parse_qs(parse.urlsplit(url).query)
-            #parameters = dict(parse.parse_qsl(parse.urlsplit(url).query))
-            #try:
-             #   responseBody = {'orderNum': parameters.get('orderNum')}
-              #  status = 200 #request is found
+            parse.urlsplit(path)
+            parse.parse_qs(parse.urlsplit(path).query)
+            parameters = dict(parse.parse_qsl(parse.urlsplit(path).query))
 
-            #except:
-             #   status = 404
+            try:
+                response = {'orderNum': parameters.get('orderNum')}
+                status = 200 #request is found
+            except:
+                 status = 404
 
         elif '/returnVehicle' in path:
             status = 200
