@@ -45,9 +45,10 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         cloud = 'supply'
         client = initMongoFromCloud(cloud)
         db = client['team22_' + cloud]
-
+        response = {}
+        
         if '/order' in path:
-            responseBody = {"response" : "hi blake"}
+            response = {"response" : "hi blake"}
             status = 200
             #url = self.getRequestURI()
             #arse.urlsplit(url)
