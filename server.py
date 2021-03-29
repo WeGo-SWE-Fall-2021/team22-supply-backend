@@ -48,6 +48,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         if '/order' in path:
             responseBody = {"response" : "hi blake"}
+            status = 200
             #url = self.getRequestURI()
             #arse.urlsplit(url)
             #parse.parse_qs(parse.urlsplit(url).query)
