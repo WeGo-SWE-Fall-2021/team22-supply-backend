@@ -60,7 +60,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             #except:
              #   status = 404
 
-        if '/returnVehicle' in path:
+        elif '/returnVehicle' in path:
             status = 200
             # response = {'hello': 'world', 'received': 'ok'}
             #vehicleID = int(123)
