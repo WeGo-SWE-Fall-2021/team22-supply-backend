@@ -60,12 +60,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             #except:
              #   status = 404
 
-            self.send_response(status)
-            self.send_header("Content-Type", "text/html")
-            self.end_headers()
-            responseString = json.dumps(responseBody).encode('utf-8')
-            self.wfile.write(responseString)
-
         if '/returnVehicle' in path:
             status = 200
             # response = {'hello': 'world', 'received': 'ok'}
