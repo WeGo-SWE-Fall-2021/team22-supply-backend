@@ -47,16 +47,17 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         db = client['team22_' + cloud]
 
         if '/order' in path:
-            url = self.getRequestURI()
-            parse.urlsplit(url)
-            parse.parse_qs(parse.urlsplit(url).query)
-            parameters = dict(parse.parse_qsl(parse.urlsplit(url).query))
-            try:
-                responseBody = {'orderNum': parameters.get('orderNum')}
-                status = 200 #request is found
+            responseBody = {"response" : "hi blake"}
+            #url = self.getRequestURI()
+            #arse.urlsplit(url)
+            #parse.parse_qs(parse.urlsplit(url).query)
+            #parameters = dict(parse.parse_qsl(parse.urlsplit(url).query))
+            #try:
+             #   responseBody = {'orderNum': parameters.get('orderNum')}
+              #  status = 200 #request is found
 
-            except:
-                status = 404
+            #except:
+             #   status = 404
 
             self.send_response(status)
             self.send_header("Content-Type", "text/html")
