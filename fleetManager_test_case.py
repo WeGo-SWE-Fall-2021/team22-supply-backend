@@ -71,8 +71,8 @@ class FleetManagerTestCase(unittest.TestCase):
         self.assertEqual(fleetManager.lname, "newlastname")
         fleetManager.phoneNumber = "00000"
         self.assertEqual(fleetManager.phoneNumber, "00000")
-        fleetManager.fleetManagerID = "A123"
-        self.assertEqual(fleetManager.fleetManagerID, "A123")
+        fleetManager.fleetManagerID = "A1234"
+        self.assertEqual(fleetManager.fleetManagerID, "A1234")
         fleetManager.dockNumber = "W123"
         self.assertEqual(fleetManager.dockNumber, "W123")
         fleetManager.dockAddress = "123 test"
