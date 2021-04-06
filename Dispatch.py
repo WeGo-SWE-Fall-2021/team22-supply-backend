@@ -31,12 +31,11 @@ class Dispatch:
         forwardGeocodingURL = "https://api.mapbox.com/geocoding/v5/mapbox.places/" + destination +".json?types=address&access_token=" + api_key
         response = requests.get(forwardGeocodingURL)
         forwardGeocodeData = json.loads(response.text)
+        return forwardGeocodeData
 
-        coordinate = forwardGeocodeData["features"][0]["geometry"]["coordinates"]
+    def getCoordinateFromGeocodeResponse(self, json_response):
+        coordinate = json_response["features"][0]["geometry"]["coordinates"]
         return coordinate
-
-    def parseForwardGeocodingResponse(self, json_response):
-        pass
     # Method Description: Sends a HTTP Request of Directions Mapbox API
     # pre-condition: "nothing??"
     # post-condition: returns the JSON response of Directions Mapbox API
@@ -44,8 +43,10 @@ class Dispatch:
         json_response = self.requestForwardGeocoding()
         destination_coordinate = self.parseForwardGeocodingResponse(json_response)
 
-    def parseDirectionsResponse(self):
+    def getRouteStepsFromDirectionsResponse(self):
         pass
 
     def sendDirections(self):
+        pass
+    def getETAFromDirectionsResponse(self):
         pass
