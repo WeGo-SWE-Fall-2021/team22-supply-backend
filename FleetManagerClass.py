@@ -1,23 +1,20 @@
-from UserClass import User
+import sys
+
+sys.path.insert(1, '../team22-common-services-backend')
+sys.path.insert(1, '../common-services-backend')
+
+from User import User
+
 
 class FleetManager(User):
     # class constructor, takes data from postData and populates class attributes
     # inherents parent attributes
     def __init__(self, postData):
         super().__init__(postData)
-        self._fleetManagerID = postData["fleetManagerID"]
         self._dockNumber = postData["dockNumber"]
         self._dockAddress = postData["dockAddress"]
 
 #---------- setters & getters -----------
-    @property
-    def fleetManagerID(self):
-        return self._fleetManagerID
-
-    @fleetManagerID.setter
-    def fleetManagerID(self, manID):
-        self._fleetManagerID = manID
-
     @property
     def dockNumber(self):
         return self._dockNumber

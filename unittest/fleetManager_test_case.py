@@ -1,6 +1,8 @@
 import unittest
 import sys
+
 sys.path.insert(1, "../")
+
 from FleetManagerClass import FleetManager
 
 
@@ -41,7 +43,7 @@ class FleetManagerTestCase(unittest.TestCase):
         self.assertEqual(fleetManager.email, "email@email.com")
         self.assertEqual(fleetManager.username, "user")
         self.assertEqual(fleetManager.password, "pwdtest")
-        self.assertEqual(fleetManager.fleetManagerID, "testID")
+        # self.assertEqual(fleetManager.fleetManagerID, "testID")
         self.assertEqual(fleetManager.dockNumber, "testDockNum")
         self.assertEqual(fleetManager._dockAddress, "testAddress")
 
@@ -71,8 +73,8 @@ class FleetManagerTestCase(unittest.TestCase):
         self.assertEqual(fleetManager.lname, "newlastname")
         fleetManager.phoneNumber = "00000"
         self.assertEqual(fleetManager.phoneNumber, "00000")
-        fleetManager.fleetManagerID = "A1234"
-        self.assertEqual(fleetManager.fleetManagerID, "A1234")
+        # fleetManager.fleetManagerID = "A1234"
+        # self.assertEqual(fleetManager.fleetManagerID, "A1234")
         fleetManager.dockNumber = "W123"
         self.assertEqual(fleetManager.dockNumber, "W123")
         fleetManager.dockAddress = "123 test"
