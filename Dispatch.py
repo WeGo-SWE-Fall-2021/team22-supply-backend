@@ -30,8 +30,10 @@ class Dispatch:
         destination = self.getOrderDestination()
         forwardGeocodingURL = "https://api.mapbox.com/geocoding/v5/mapbox.places/" + destination +".json?types=address&access_token=" + api_key
         response = requests.get(forwardGeocodingURL)
-        forwardGeocodeData = json.dumps(response.text)
-        return forwardGeocodeData
+        forwardGeocodeData = json.loads(response.text)
+
+        coordinate = forwardGeocodeData["features"][0]["geometry"]["coordinates"]
+        return coordinate
 
     def parseForwardGeocodingResponse(self, json_response):
         pass
