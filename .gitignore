@@ -1,4 +1,17 @@
+# Hide any vscode workspace
+.vscode
+
+# Hide any idea workspace
 .idea
+
+# Hide python build
 env/
-# passwords ect
+
+# Hide variable .env file
 .env
+
+# Hide macOS .DS_STORE
+.DS_STORE
+
+# Ignore  python cache
+__pycache__/
