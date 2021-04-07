@@ -1,5 +1,7 @@
 import json
 import sys
+import time
+from bson.objectid import ObjectId
 # Allow importing files from other directories
 sys.path.insert(1, '../team22-common-services-backend')
 sys.path.insert(1, '../common-services-backend')
@@ -7,6 +9,7 @@ from urllib import parse
 from http.server import HTTPServer
 from http.server import BaseHTTPRequestHandler
 from MongoUtils import initMongoFromCloud
+
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -31,6 +34,25 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             'status': 'failed',
             'message': 'Request not found'
         }
+
+        if '/vehicleHeartbeat' in path:
+            status = 401
+            responseBody = {
+                'status': 'failed',
+                'message': 'Heartbeat Failed'
+            }
+            # Vehicle heartbeating / top update in DB
+            vehicleId = postData.pop("vehicleId", None)
+            lastHeartbeat = time.time()
+            
+            postData["lastHeartbeat"] = lastHeartbeat
+
+            #Update document in DB
+            result = db.Vehicle.update_one({"_id" : ObjectId(vehicleId)}, postData)
+
+            if result.matched_count == 1 and result.modified_count == 1:
+                response = {'Heartbeat': 'Received'}
+                status = 200 # Database Updated
 
         self.send_response(status)
         self.send_header("Content-Type", "text/html")
@@ -69,13 +91,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 vehicles.append({ "vehicleID": vehicle["vehicleID"], "status": vehicle["status"],
                                   "FleetID": vehicle["FleetID"]})
             response = vehicles
-
-        elif '/vehicleHeartbeat' in path:
-            status = 200
-            response = {'Heartbeat': 'Received'}
-            # capture vehicle update, update supply DB
-            # if vehicleID == vehicleID connected to incoming order
-            # respond with route for vehicle
 
         else:
             status = 400
