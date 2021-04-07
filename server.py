@@ -9,7 +9,7 @@ from urllib import parse
 from http.server import HTTPServer
 from http.server import BaseHTTPRequestHandler
 from MongoUtils import initMongoFromCloud
-
+from FleetManagerClass import FleetManager
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -69,8 +69,11 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         client = initMongoFromCloud(cloud)
         db = client['team22_' + cloud]
         response = {}
-        
-        if '/order' in path:
+        # Get token
+        fleetManager = getFleetManagerFromToken()
+
+        # TODO Move to POST
+        if '/dispatch' in path:
             parse.urlsplit(path)
             parse.parse_qs(parse.urlsplit(path).query)
             parameters = dict(parse.parse_qsl(parse.urlsplit(path).query))
@@ -82,15 +85,27 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                  status = 404
 
         elif '/returnVehicle' in path:
-            status = 200
-            # response = {'hello': 'world', 'received': 'ok'}
-            #vehicleID = int(123)
-            cursor = db.Vehicle.find({}, {'_id': 0, 'vehicleID': 1, 'status': 1, 'FleetID': 1})
-            vehicles = []
-            for vehicle in cursor:
-                vehicles.append({ "vehicleID": vehicle["vehicleID"], "status": vehicle["status"],
-                                  "FleetID": vehicle["FleetID"]})
-            response = vehicles
+            status = 403 # Not Authorized
+            response = {
+                "message": "Not authorized"
+            }
+
+            if fleetManager is not None:
+                # validate
+                cursor = db.fleet.find({}, {'_id': 1, 'status': 1})
+                vehicles = []
+                for vehicle in cursor:
+                    vehicles.append({ "_id": vehicle["vehicleID"], "status": vehicle["status"],
+                                        "FleetID": vehicle["FleetID"]})
+                response = vehicles
+
+                status = 200
+                response = {
+                    "fname": user.fname,
+                    "lname": user.lname,
+                    "email": user.email,
+                    "username": user.username
+                }
 
         else:
             status = 400
@@ -102,6 +117,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         responseString = json.dumps(response).encode('utf-8')
         self.wfile.write(responseString)
         client.close()
+
+    def getFleetManagerFromToken():
+        tokenStr = self.headers["Cookie"]
+        if tokenStr is not None:
+            token = tokenStr.split('=')[1]
+            user = db.fleetManager.find_one({"token": token})
+            if user is not None:
+                return FleetManager(user)
+        return None
 
 
 def main():
