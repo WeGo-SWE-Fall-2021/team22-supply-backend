@@ -13,7 +13,7 @@ from FleetManagerClass import FleetManager
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
-    version = '0.0.1'
+    version = '0.1.0'
 
     # Reads the POST data from the HTTP header
     def extract_POST_Body(self):
@@ -42,18 +42,22 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 'message': 'Heartbeat Failed'
             }
             # Vehicle heartbeating / top update in DB
-            vehicleId = postData["vehicleId"]
-            del postData['vehicleId']
+            vehicleId = postData.pop("vehicleId", None)
             lastHeartbeat = time.time()
             
             postData["lastHeartbeat"] = lastHeartbeat
 
-            #Update document in DB
-            result = db.Vehicle.update_one({"_id" : ObjectId(vehicleId)}, postData)
+            # Update document in DB
+            result = db.Vehicle.replace_one({"_id" : ObjectId(vehicleId)}, postData)
 
             if result.matched_count == 1 and result.modified_count == 1:
-                response = {'Heartbeat': 'Received'}
-                status = 200 # Database Updated
+                responseBody = {
+                    'Heartbeat': 'Received'
+                }
+                status = 200 # DatabaseUpdated 
+
+        if '/fleet':
+            # HACKING THE SYSTEM
 
         self.send_response(status)
         self.send_header("Content-Type", "text/html")
@@ -90,22 +94,19 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             response = {
                 "message": "Not authorized"
             }
-
+ 
             if fleetManager is not None:
-                # validate
-                cursor = db.fleet.find({}, {'_id': 1, 'status': 1})
+                # Validate
+                cursor = db.Fleet.find({}, {'_id': 1, 'status': 1})
                 vehicles = []
-                for vehicle in cursor:
-                    vehicles.append({ "_id": vehicle["vehicleID"], "status": vehicle["status"],
-                                        "FleetID": vehicle["FleetID"]})
                 response = vehicles
 
                 status = 200
                 response = {
-                    "fname": user.fname,
-                    "lname": user.lname,
-                    "email": user.email,
-                    "username": user.username
+                    "fname": fleetManager.fname,
+                    "lname": fleetManager.lname,
+                    "email": fleetManager.email,
+                    "username": fleetManager.username
                 }
 
         else:
@@ -123,7 +124,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         tokenStr = self.headers["Cookie"]
         if tokenStr is not None:
             token = tokenStr.split('=')[1]
-            user = db.fleetManager.find_one({"token": token})
+            user = db.FleetManager.find_one({"token": token})
             if user is not None:
                 return FleetManager(user)
         return None
