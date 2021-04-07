@@ -42,7 +42,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 'message': 'Heartbeat Failed'
             }
             # Vehicle heartbeating / top update in DB
-            vehicleId = postData.pop("vehicleId", None)
+            vehicleId = postData["vehicleId"]
+            del postData['vehicleId']
             lastHeartbeat = time.time()
             
             postData["lastHeartbeat"] = lastHeartbeat
