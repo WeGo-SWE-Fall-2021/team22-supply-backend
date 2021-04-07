@@ -77,7 +77,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         db = client['team22_' + cloud]
         response = {}
         # Get token
-        fleetManager = getFleetManagerFromToken()
+        fleetManager = getFleetManagerFromToken(db)
 
         # TODO Move to POST
         if '/dispatch' in path:
@@ -122,7 +122,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(responseString)
         client.close()
 
-    def getFleetManagerFromToken():
+    def getFleetManagerFromToken(self, db):
         tokenStr = self.headers["Cookie"]
         if tokenStr is not None:
             token = tokenStr.split('=')[1]
