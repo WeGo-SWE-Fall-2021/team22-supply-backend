@@ -58,6 +58,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         if '/fleet':
             # HACKING THE SYSTEM
+            status = 200
+
 
         self.send_response(status)
         self.send_header("Content-Type", "text/html")

@@ -1,5 +1,5 @@
 # Hide any vscode workspace
-.vscode
+.vscode/
 
 # Hide any idea workspace
 .idea
