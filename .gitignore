@@ -2,7 +2,7 @@
 .vscode/
 
 # Hide any idea workspace
-.idea
+.idea/
 
 # Hide python build
 env/

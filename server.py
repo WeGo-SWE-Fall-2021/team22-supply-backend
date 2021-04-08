@@ -8,8 +8,8 @@ sys.path.insert(1, '../common-services-backend')
 from urllib import parse
 from http.server import HTTPServer
 from http.server import BaseHTTPRequestHandler
-from MongoUtils import initMongoFromCloud
-from FleetManagerClass import FleetManager
+from mongoutils import initMongoFromCloud
+from fleetmanager import FleetManager
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -105,8 +105,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
                 status = 200
                 response = {
-                    "fname": fleetManager.fname,
-                    "lname": fleetManager.lname,
+                    "fname": fleetManager.firstName,
+                    "lname": fleetManager.lastName,
                     "email": fleetManager.email,
                     "username": fleetManager.username
                 }
