@@ -1,7 +1,13 @@
 import sys
 
-sys.path.insert(1, '../team22-common-services-backend')
-sys.path.insert(1, '../common-services-backend')
+if '../' in sys.path:
+    # Current working firectory is unittest, so go back from directory twice
+    sys.path.insert(2, '../../team22-common-services-backend')
+    sys.path.insert(2, '../../common-services-backend')
+else:
+    # current working directory is team22-supply-backend so go back once
+    sys.path.insert(1, '../team22-common-services-backend')
+    sys.path.insert(1, '../common-services-backend')
 
 from user import User
 

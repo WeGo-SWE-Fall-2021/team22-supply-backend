@@ -1,0 +1,24 @@
+#  Python build by Erik Bautista
+
+image: python:3.8
+
+pipelines:
+  default:
+    - step: 
+        name: Build and Run Test
+        script:
+          - cd ../
+          - git clone git@bitbucket.org:swe-spring-2021-team-22/team22-common-services-backend.git
+          - cd team22-common-services-backend/
+          - python3 -m venv env
+          - source env/bin/activate
+          - if [ -f requirements.txt ]; then python3 -m pip install -r requirements.txt; fi
+          - deactivate
+          - cd ../build
+          - python3 -m venv env
+          - source env/bin/activate
+          - if [ -f requirements.txt ]; then python3 -m pip install -r requirements.txt; fi
+          - ls -l && ls -l ../ && ls -l ../team22-common-services-backend
+          - cd unittest
+          - python3 -m unittest discover -p "*test*.py" -v
+          - deactivate

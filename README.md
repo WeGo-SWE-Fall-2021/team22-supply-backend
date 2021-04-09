@@ -1,15 +1,15 @@
 # Team 22 Supply Back end
 This is the Team 22 backend for supply services. This repository deals with any requests handled in `https://supply.team22.sweispring21.tk/api/v1/supply/[request-name]` for `supply` services.
 
-## Objective ##
+## Objective
 The objective of `Supply Backend` is to handle any requests sent to `supply/[request-name]` and write to database.
 
 This repository includes `unittest` so that we are able to test our objects and soon we will implement CI/CD for  automated builds and testing.
 
-## REST API ## 
+## REST API
 You can view working REST API for supply using [Postman]()
 
-## Structure ##
+## Structure
 ```
 team22-supply-backend
 ├── docs                            # Documentation Directory
@@ -20,6 +20,7 @@ team22-supply-backend
 ├── fleetmanager.py                 # FleetManager class object
 ├── server.py                       # The main Python endpoints server for supply cloud
 ├── requirements.txt                # Python Dependencies to run `server.py`
+├── bitbucket-pipelines.yml         # This is our bitbucket pipeline which does continous integrations test
 └── README.md                       # Documentation about this repo
 ```
 
@@ -43,7 +44,7 @@ Now that you have the environment, in order to be in the environment you type:
 ### Installing/Uninstalling Dependencies
 Make sure you install dependencies. You do so by running `python3 -m pip install -r requirements.txt`. If you added more or removed dependencies and need to generate a new `requirements.txt`, you do so by running `pip freeze > requirements.txt`.
 
-#### .env file ####
+#### .env file
 This file you have to make on your own. It should be on the project directory. If you notice, `MongoUtils.py` script uses `MONGO_SECRET`, which needs to be defined in `.env` file. This holds our mongo database `developer` password.
 
 ### Deactivating Environment
