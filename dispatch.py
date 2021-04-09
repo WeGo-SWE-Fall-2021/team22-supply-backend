@@ -5,6 +5,8 @@ import requests
 from uuid import uuid4
 
 class Dispatch:
+    # constant variable (class variable) api key:
+    API_KEY = "pk.eyJ1IjoibmRhbHRvbjEiLCJhIjoiY2tsNWlkMHBwMTlncDJwbGNuNzJ6OGo2ciJ9.QbcnC4OnBjZU6P6JN6m3Pw"
     # Constructor. Initializes Dispatch from parameter values *** CAN ONLY ALLOW ONE CONSTRUCTOR ***
     # def __init__(self, orderId, customerId, orderDestination, status, vehicleId):
     #     self._id = uuid4()
@@ -81,22 +83,26 @@ class Dispatch:
     # pre-condition: "nothing??"
     # post-condition: returns the JSON response of Forward Geocoding Mapbox API
     def requestForwardGeocoding(self):
-        destination = self.getOrderDestination()
-        forwardGeocodingURL = "https://api.mapbox.com/geocoding/v5/mapbox.places/" + destination +".json?types=address&access_token=" + api_key
+        destination = self._orderDestination.replace(" ", "%")
+        forwardGeocodingURL = "https://api.mapbox.com/geocoding/v5/mapbox.places/" + destination +".json?types=address&access_token=" + self.API_KEY
         response = requests.get(forwardGeocodingURL)
         forwardGeocodeData = json.loads(response.text)
         return forwardGeocodeData
 
-    def getCoordinateFromGeocodeResponse(self, json_response):
+    # Method Description: Static method that parses the Forward Geocoding Mapbox Response to just get coordinates
+    def getCoordinateFromGeocodeResponse(json_response):
         coordinate = json_response["features"][0]["geometry"]["coordinates"]
         return coordinate
-
+    def getVehicleLocation(self):
+        pass
     # Method Description: Sends a HTTP Request of Directions Mapbox API
     # pre-condition: "nothing??"
     # post-condition: returns the JSON response of Directions Mapbox API
     def requestDirections(self):
-        json_response = self.requestForwardGeocoding()
-        destination_coordinate = self.parseForwardGeocodingResponse(json_response)
+        forward_geocoding_json = self.requestForwardGeocoding()
+        destination_coordinate = Dispatch.getCoordinateFromGeocodeResponse(forward_geocoding_json)
+        url = "https://api.mapbox.com/directions/v5/mapbox/driving/-97.752987,30.229009;-97.741089,30.272759?geometries=geojson&overview=full&steps=true&access_token=" + self.API_KEY
+
 
     def getRouteStepsFromDirectionsResponse(self):
         pass
