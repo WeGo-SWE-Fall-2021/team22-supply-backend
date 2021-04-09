@@ -2,9 +2,9 @@
 
 image: python:3.8
 
-pipelines:
-  default:
-    - step: 
+definitions:
+  steps:
+    - step: &build-and-unittest
         name: Build and Run Test
         script:
           - cd ../
@@ -18,7 +18,24 @@ pipelines:
           - python3 -m venv env
           - source env/bin/activate
           - if [ -f requirements.txt ]; then python3 -m pip install -r requirements.txt; fi
-          - ls -l && ls -l ../ && ls -l ../team22-common-services-backend
           - cd unittest
           - python3 -m unittest discover -p "*test*.py" -v
           - deactivate
+
+pipelines:
+  default:
+    - step: *build-and-unittest
+  
+  branches:
+    master:
+      - step: *build-and-unittest
+
+      - step:
+          name: Deploy to Supply Cloud
+          script:
+          - pipe: atlassian/ssh-run:0.3.0
+            variables:
+              SSH_USER: $USER
+              SERVER: $SUPPLY_SERVER
+              MODE: "command"
+              COMMAND: "/home/team22/webhooks/team22-redeploy.sh ${BITBUCKET_REPO_SLUG}"
