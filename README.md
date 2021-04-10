@@ -13,8 +13,9 @@ You can view working REST API for supply using [Postman]()
 ```
 team22-supply-backend
 ├── docs                            # Documentation Directory
-├── unittest                        # Unit Test Directory to test Object classes                     
-│   └── dispatch_test_case.py       # Test cases for `dispatch.py` class
+├── unittest                        # Unit Test Directory to test Object classes   
+│   ├── server_test_case.py         # Test cases for `server.py` class
+│   ├── dispatch_test_case.py       # Test cases for `dispatch.py` class
 │   └── fleetmanager_test_case.py   # Test cases for `fleetmanager.py` class
 ├── dispatch.py                     # Dispatch class object
 ├── fleetmanager.py                 # FleetManager class object

@@ -57,6 +57,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 status = 200 # DatabaseUpdated 
 
         if '/fleet':
+            # Get token so we can get the fleet manager
+            fleetManager = self.get_fleet_manager_from_token(db)
             # HACKING THE SYSTEM
             status = 200
 
@@ -77,7 +79,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         db = client['team22_' + cloud]
         response = {}
         # Get token
-        fleetManager = getFleetManagerFromToken(db)
+        fleetManager = self.get_fleet_manager_from_token(db)
 
         # TODO Move to POST
         if '/dispatch' in path:
@@ -122,7 +124,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(responseString)
         client.close()
 
-    def getFleetManagerFromToken(self, db):
+    def get_fleet_manager_from_token(self, db):
         tokenStr = self.headers["Cookie"]
         if tokenStr is not None:
             token = tokenStr.split('=')[1]
@@ -130,7 +132,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if user is not None:
                 return FleetManager(user)
         return None
-
 
 def main():
     port = 4001  # Port 4001 reserved for demand backend
