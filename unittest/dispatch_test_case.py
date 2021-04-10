@@ -13,7 +13,7 @@ class DispatchTestCase(unittest.TestCase):
         data = {
             "_id": "1234",
             "orderId": "4321",
-            "customerId": "9876",
+            "pluginType": "1",
             "orderDestination": "austin",
             "status": "available",
             "vehicleId": "4567"
@@ -25,7 +25,7 @@ class DispatchTestCase(unittest.TestCase):
         data = {
             "_id": "1234",
             "orderId": "4321",
-            "customerId": "9876",
+            "pluginType": "1",
             "orderDestination": "austin",
             "status": "available",
             "vehicleId": "4567"
@@ -34,7 +34,7 @@ class DispatchTestCase(unittest.TestCase):
         self.assertIsNotNone(dispatch)
         self.assertEqual(dispatch.id, "1234")
         self.assertEqual(dispatch.orderId, "4321")
-        self.assertEqual(dispatch.customerId, "9876")
+        self.assertEqual(dispatch.pluginType, "1")
         self.assertEqual(dispatch.orderDestination, "austin")
         self.assertEqual(dispatch.status, "available")
         self.assertEqual(dispatch.vehicleId, "4567")
@@ -43,7 +43,7 @@ class DispatchTestCase(unittest.TestCase):
         data = {
             "_id": "1234",
             "orderId": "4321",
-            "customerId": "9876",
+            "pluginType": "1",
             "orderDestination": "austin",
             "status": "available",
             "vehicleId": "4567"

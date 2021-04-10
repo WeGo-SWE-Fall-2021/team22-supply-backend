@@ -13,7 +13,6 @@ else:
     sys.path.insert(1, '../common-services-backend')
 
 from mongoutils import initMongoFromCloud
-
 from uuid import uuid4
 
 class Dispatch:
@@ -35,10 +34,10 @@ class Dispatch:
         # useful when creating first time dispatches
         self._id = str(dict.get('_id', uuid4()))
         self._orderId = dict["orderId"]
-        self._customerId = dict["customerId"]
+        self._vehicleId = dict["vehicleId"]
         self._orderDestination = dict["orderDestination"]
         self._status = dict["status"]
-        self._vehicleId = dict["vehicleId"]
+        self._pluginType = dict["pluginType"]
 
     # Read only property of Dispatch Id
     @property
@@ -49,11 +48,6 @@ class Dispatch:
     @property
     def orderId(self):
         return self._orderId
-
-    # Read only property of customer Id
-    @property
-    def customerId(self):
-        return self._customerId
 
     # Method Description: Modifies order destination string by
         # replacing a whitespace with a "%"
@@ -91,6 +85,16 @@ class Dispatch:
     def vehicleId(self, value):
         self._vehicleId = value 
 
+    @property
+    def pluginType(self):
+        return self._pluginType
+
+    # Set vehicle id
+    @pluginType.setter
+    def pluginType(self, value):
+        self._pluginType = value 
+
+
     # Method Description: Sends a HTTP Request of Forward Geocoding Mapbox API
     # pre-condition: "nothing??"
     # post-condition: returns the JSON response of Forward Geocoding Mapbox API
@@ -121,7 +125,7 @@ class Dispatch:
     # post-condition: returns the JSON response of Directions Mapbox API
     def requestDirections(self):
         forward_geocoding_json = self.requestForwardGeocoding()
-        destination_coordinate = Dispatch.getCoordinateFromGeocodeResponse(forward_geocoding_json)
+        destination_coordinate = self.getCoordinateFromGeocodeResponse(forward_geocoding_json)
         directionsURL = "https://api.mapbox.com/directions/v5/mapbox/driving/" + self.getVehicleLocation() + ";" + destination_coordinate + "?geometries=geojson&overview=full&steps=true&access_token=" + self.API_KEY
         response = requests.get(directionsURL)
         directionsData = json.loads(response.text)
@@ -144,6 +148,7 @@ class Dispatch:
 
     def getGeometry(json_response):
         pass
+
     def sendDirections(self):
         pass
 

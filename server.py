@@ -10,7 +10,7 @@ from http.server import HTTPServer
 from http.server import BaseHTTPRequestHandler
 from mongoutils import initMongoFromCloud
 from fleetmanager import FleetManager
-
+from dispatch import Dispatch
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     version = '0.1.0'
@@ -30,6 +30,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         cloud = 'supply'
         client = initMongoFromCloud(cloud)
         db = client['team22_' + cloud]
+
         responseBody = {
             'status': 'failed',
             'message': 'Request not found'
@@ -44,7 +45,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # Vehicle heartbeating / top update in DB
             vehicleId = postData.pop("vehicleId", None)
             lastHeartbeat = time.time()
-            
+
             postData["lastHeartbeat"] = lastHeartbeat
 
             # Update document in DB
@@ -56,12 +57,42 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 }
                 status = 200 # DatabaseUpdated 
 
-        if '/fleet':
+        elif '/fleet' in path:
             # Get token so we can get the fleet manager
             fleetManager = self.get_fleet_manager_from_token(db)
             # HACKING THE SYSTEM
             status = 200
 
+        elif '/dispatch' in path:
+            status = 401
+            dispatch_data = {
+                "orderId": postData["orderId"],
+                "vehicleId": "0",
+                "orderDestination": postData["orderDestination"],
+                "status": "processing",
+                "pluginType": postData["pluginType"]
+            }
+
+            dispatch = Dispatch(dispatch_data)
+
+            fleet_data = db.Fleet.find_one({ "pluginIds": dispatch.pluginType})
+
+            if fleet_data is not None:
+                # Convert data to Fleet Object and request a vehicle
+                dispatch.vehicleId = "94012839137982347892349823498"
+                db.Dispatch.insert_one({
+                    "_id": dispatch.id,
+                    "orderId": dispatch.orderId,
+                    "vehicleId": dispatch.vehicleId,
+                    "status": dispatch.status,
+                    "orderDestination": dispatch.orderDestination,
+                    "pluginType": dispatch.pluginType
+                })
+                status = 201 # request is created
+                responseBody = {
+                    'dispatch_status': dispatch.status,
+                    'vehicleId': dispatch.vehicleId
+                }
 
         self.send_response(status)
         self.send_header("Content-Type", "text/html")
@@ -81,19 +112,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         # Get token
         fleetManager = self.get_fleet_manager_from_token(db)
 
-        # TODO Move to POST
-        if '/dispatch' in path:
-            parse.urlsplit(path)
-            parse.parse_qs(parse.urlsplit(path).query)
-            parameters = dict(parse.parse_qsl(parse.urlsplit(path).query))
-
-            try:
-                response = {'orderNum': parameters.get('orderNum')}
-                status = 200 #request is found
-            except:
-                 status = 404
-
-        elif '/returnVehicle' in path:
+        if '/returnVehicle' in path:
             status = 403 # Not Authorized
             response = {
                 "message": "Not authorized"
