@@ -8,6 +8,7 @@ from dispatch import Dispatch
 
 class DispatchTestCase(unittest.TestCase):
 
+
     def test_dispatch_creation_dictionary(self):
         data = {
             "_id": "1234",

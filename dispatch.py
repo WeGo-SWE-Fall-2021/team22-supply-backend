@@ -1,6 +1,18 @@
 import urllib.request
 import json
 import requests
+import sys
+
+if '../' in sys.path:
+    # Current working firectory is unittest, so go back from directory twice
+    sys.path.insert(2, '../../team22-common-services-backend')
+    sys.path.insert(2, '../../common-services-backend')
+else:
+    # current working directory is team22-supply-backend so go back once
+    sys.path.insert(1, '../team22-common-services-backend')
+    sys.path.insert(1, '../common-services-backend')
+
+from mongoutils import initMongoFromCloud
 
 from uuid import uuid4
 
@@ -93,20 +105,45 @@ class Dispatch:
     def getCoordinateFromGeocodeResponse(json_response):
         coordinate = json_response["features"][0]["geometry"]["coordinates"]
         return coordinate
-    def getVehicleLocation(self):
-        pass
+
+    # Method Description: Grabs the vehicle location from the supply database
+    #
+    def getVehicleLocation(self, client):
+        db = client['team22_'+'supply']
+        dictionary = db.Vehicle.find_one({'_id' : self.vehicleId})
+        location = ""
+        if dictionary is not None:
+            location = dictionary["location"]
+        return location
+
     # Method Description: Sends a HTTP Request of Directions Mapbox API
     # pre-condition: "nothing??"
     # post-condition: returns the JSON response of Directions Mapbox API
     def requestDirections(self):
         forward_geocoding_json = self.requestForwardGeocoding()
         destination_coordinate = Dispatch.getCoordinateFromGeocodeResponse(forward_geocoding_json)
-        url = "https://api.mapbox.com/directions/v5/mapbox/driving/-97.752987,30.229009;-97.741089,30.272759?geometries=geojson&overview=full&steps=true&access_token=" + self.API_KEY
+        directionsURL = "https://api.mapbox.com/directions/v5/mapbox/driving/" + self.getVehicleLocation() + ";" + destination_coordinate + "?geometries=geojson&overview=full&steps=true&access_token=" + self.API_KEY
+        response = requests.get(directionsURL)
+        directionsData = json.loads(response.text)
+        return directionsData
 
+    def getRouteCoordinates(json_response):
+        steps = json_response["routes"][0]["legs"][0]["steps"]
+        listOfListCoordinates = []
+        for i in range(0, len(steps)):
+            listOfListCoordinates.append(steps[i]["geometry"]["coordinates"])
+        coordinates_list = []
+        for i in listOfListCoordinates:
+            for j in i:
+                coordinates_list.append(j)
+        return coordinates_list
+        # vehicle will be given "STEPS", which is an array of ROUTE-STEP OBJECTS from the
+        # ROUTE-LEG OBJECT, which is contained in the ROUTE OBJECT from the directions response.
+        # A nested ROUTE-STEP OBJECT includes ONE-STEP-MANEUVER OBJECT
+        # vehicle sim will need to get steps[i]["geometry"]["coordinates"]
 
-    def getRouteStepsFromDirectionsResponse(self):
+    def getGeometry(json_response):
         pass
-
     def sendDirections(self):
         pass
 
