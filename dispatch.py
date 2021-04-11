@@ -99,7 +99,7 @@ class Dispatch:
     # pre-condition: "nothing??"
     # post-condition: returns the JSON response of Forward Geocoding Mapbox API
     def requestForwardGeocoding(self):
-        destination = self._orderDestination.replace(" ", "%")
+        destination = self.orderDestination.replace(" ", "%")
         forwardGeocodingURL = "https://api.mapbox.com/geocoding/v5/mapbox.places/" + destination +".json?types=address&access_token=" + self.API_KEY
         response = requests.get(forwardGeocodingURL)
         forwardGeocodeData = json.loads(response.text)
@@ -107,8 +107,9 @@ class Dispatch:
 
     # Method Description: Static method that parses the Forward Geocoding Mapbox Response to just get coordinates
     def getCoordinateFromGeocodeResponse(json_response):
-        coordinate = json_response["features"][0]["geometry"]["coordinates"]
-        return coordinate
+        coordinate_in_array = json_response["features"][0]["geometry"]["coordinates"]
+        coordinate_string = str(coordinate_in_array[0]) + "," + str(coordinate_in_array[1])
+        return coordinate_string
 
     # Method Description: Grabs the vehicle location from the supply database
     #
@@ -123,10 +124,10 @@ class Dispatch:
     # Method Description: Sends a HTTP Request of Directions Mapbox API
     # pre-condition: "nothing??"
     # post-condition: returns the JSON response of Directions Mapbox API
-    def requestDirections(self):
+    def requestDirections(self, client):
         forward_geocoding_json = self.requestForwardGeocoding()
-        destination_coordinate = self.getCoordinateFromGeocodeResponse(forward_geocoding_json)
-        directionsURL = "https://api.mapbox.com/directions/v5/mapbox/driving/" + self.getVehicleLocation() + ";" + destination_coordinate + "?geometries=geojson&overview=full&steps=true&access_token=" + self.API_KEY
+        destination_coordinate = Dispatch.getCoordinateFromGeocodeResponse(forward_geocoding_json)
+        directionsURL = "https://api.mapbox.com/directions/v5/mapbox/driving/" + self.getVehicleLocation(client) + ";" + destination_coordinate + "?geometries=geojson&overview=full&steps=true&access_token=" + self.API_KEY
         response = requests.get(directionsURL)
         directionsData = json.loads(response.text)
         return directionsData
@@ -145,15 +146,14 @@ class Dispatch:
         # ROUTE-LEG OBJECT, which is contained in the ROUTE OBJECT from the directions response.
         # A nested ROUTE-STEP OBJECT includes ONE-STEP-MANEUVER OBJECT
         # vehicle sim will need to get steps[i]["geometry"]["coordinates"]
-
+ #
     def getGeometry(json_response):
-        pass
-
-    def sendDirections(self):
-        pass
-
-    def getETAFromDirectionsResponse(self):
-        pass
+        geometry = json_response["routes"][0]["geometry"]
+        return geometry
+    # returns a float
+    def getETAFromDirectionsResponse(json_response):
+        eta = json_response["routes"][0]["legs"][0]["duration"]
+        return eta
 
     def __str__(self):
         return f"Dispatch (\nid: {self.id} \norderId: {self.orderId} \ncustomerId: {self.customerId} \norderDestination: {self.orderDestination} \nstatus: {self.status} \nvehicleId: {self.vehicleId} \n)"

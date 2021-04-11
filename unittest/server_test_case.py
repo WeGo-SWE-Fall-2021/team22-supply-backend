@@ -123,6 +123,26 @@ class ServerTestCase(unittest.TestCase):
         location = dispatch.getVehicleLocation(client)
         self.assertEqual(location, vehicle_one["location"])
 
+    def test_dispatch_one_get_eta_1(self):
+        client = initMongoFromCloud("supply")
+        db = client["team22_supply"]
+        dispatch = Dispatch(dispatch_one)
+        dir_response = dispatch.requestDirections(client)
+        expected_eta = 713.188
+        # print(dir_response)
+        actual_eta = Dispatch.getETAFromDirectionsResponse(dir_response)
+        self.assertEqual(actual_eta, expected_eta)
+
+    def test_dispatch_one_get_routes_1(self):
+        client = initMongoFromCloud("supply")
+        db = client["team22_supply"]
+        dispatch = Dispatch(dispatch_one)
+        dir_response = dispatch.requestDirections(client)
+        expected_routes = type([[]])
+        # print(dir_response)
+        actual_routes = type(Dispatch.getRouteCoordinates(dir_response))
+        self.assertEqual(actual_routes, expected_routes)
+
     def test_order_create_new_dispatch_with_vehicle_request(self):
         payload = {
             "orderId": "8965",
