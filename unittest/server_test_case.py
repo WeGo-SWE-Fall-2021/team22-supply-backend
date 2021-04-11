@@ -38,16 +38,18 @@ fleet_one = {
     "_id": "123",
     "fleetManagerId": fleet_manager_data_one["_id"],
     "totalVehicles ": 1,
-    "pluginIds": ["1", "2"]
+    "pluginIds": ["1", "2"],
+    "vType":"food"
 }
 
 vehicle_one = {
     "_id": "789",
     "fleetId": fleet_one["_id"],
+    'status' : 'ready',
     "vType": "food",
     "location": "-97.731010, 30.283930",
     "dock": "uhhh fix me pls",
-    "lastHeartbeat": "NOW"
+    "lastHeartbeat": "1234892919.655932"
 }
 
 dispatch_one = {
@@ -63,7 +65,7 @@ client = initMongoFromCloud("supply")
 db = client["team22_supply"]
 
 # This is a demo that unittests the python endpoints. Beware, order matters in this case since we are
-# dealing witht the database, might vary depending on how you're tesing
+# dealing with the database, might vary depending on how you're tesing
 
 # TEST METHOD ORDER STRUCTURE $
 # def test_(number here)_(subject here):
@@ -110,6 +112,7 @@ class ServerTestCase(unittest.TestCase):
         response = requests.post(f"http://localhost:{port}/dispatch", json=payload, timeout=5)
         self.assertEqual(response.status_code, 201)
         self.assertEqual(json.loads(response.text)["dispatch_status"], "processing")
+        self.assertEqual(json.loads(response.text)["vehicleId"], "789")
 
 
     @classmethod
