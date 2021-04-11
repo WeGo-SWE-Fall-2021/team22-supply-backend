@@ -10,6 +10,7 @@ else:
     sys.path.insert(1, '../common-services-backend')
 
 from user import User
+from fleet import Fleet
 
 
 class FleetManager(User):
@@ -49,5 +50,33 @@ class FleetManager(User):
 
     def __str__(self):
         return f"FleetManager (\nid: {self.id} \nfirstName: {self.firstName} \nlastName: {self.lastName} \nphoneNumber: {self.phoneNumber} \nemail: {self.email} \nusername: {self.username} \npassword: {self.password} \ndockNumber: {self.dockNumber} \ndockAddress: {self.dockAddress} \n fleetIds: {self.fleetIds} \n)"
+
+    #adds a new fleet to Fleet Collection and to FleetManager plugins array
+    def addFleet(self, client, postData):
+        fleetInfo = postData
+        db = client['team22_' + 'supply']
+        fleet = Fleet(postData)
+        fleet = db.Fleet.insert_one({
+            '_id': fleet.id,
+            'fleetManagerId': self._id,
+            'totalVehicles': int(0),
+            'pluginIds' : fleetInfo['pluginIds'],
+            'vType' : fleetInfo['vType']
+        })
+        #adding the fleet to the FleetManagers fleet array
+        db.FleetManager.update({'_id': self.id}, {'"$addToSet' : {'pluginIds': fleet.id}})
+
+    # get and return the correct fleet based on the plugin it is given
+    # if no valid fleet is found
+    def accessFleet(self, client, pluginId):
+        db = client['team22_' + 'supply']
+
+        fleet_data = db.Fleet.find({'fleetManagerId': self._id, 'pluginIds': pluginId})
+        if fleet_data is not None:
+            returnFleet = Fleet(fleet_data)
+
+
+        return returnFleet
+
 
 
