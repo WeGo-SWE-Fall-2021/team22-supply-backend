@@ -56,22 +56,23 @@ class FleetManager(User):
         fleetInfo = postData
         db = client['team22_' + 'supply']
         fleet = Fleet(postData)
+        fleetID = fleet.id
         fleet = db.Fleet.insert_one({
-            '_id': fleet.id,
+            '_id': fleetID,
             'fleetManagerId': self._id,
-            'totalVehicles': int(0),
+            'totalVehicles': fleetInfo['totalVehicles'],
             'pluginIds' : fleetInfo['pluginIds'],
             'vType' : fleetInfo['vType']
         })
-        #adding the fleet to the FleetManagers fleet array
-        db.FleetManager.update({'_id': self.id}, {'"$addToSet' : {'pluginIds': fleet.id}})
 
-    # get and return the correct fleet based on the plugin it is given
-    # if no valid fleet is found
-    def accessFleet(self, client, pluginId):
+        #adding the fleet to the FleetManagers fleet array
+        db.FleetManager.update({'_id': self._id}, {'$addToSet': {'pluginIds': fleetID}})
+
+    # find and return the correct fleet based on the vType it is given
+    def accessFleet(self, client, vType):
         db = client['team22_' + 'supply']
 
-        fleet_data = db.Fleet.find({'fleetManagerId': self._id, 'pluginIds': pluginId})
+        fleet_data = db.Fleet.find_one({'fleetManagerId': self._id, 'vType': vType})
         if fleet_data is not None:
             returnFleet = Fleet(fleet_data)
 

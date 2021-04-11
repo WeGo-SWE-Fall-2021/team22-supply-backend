@@ -59,10 +59,33 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 status = 200 # DatabaseUpdated 
 
         elif '/fleet' in path:
+            status = 401
             # Get token so we can get the fleet manager
             fleetManager = self.get_fleet_manager_from_token(db)
-            # HACKING THE SYSTEM
-            status = 200
+
+            # add fleet to fleet manager and Fleet collection
+            if fleetManager is not None:
+                fleetManager.addFleet(client, postData)
+                status = 200
+                responseBody = {
+                    "fleetManager": fleetManager.id,
+                    "fleetIds": fleetManager.fleetIds
+                }
+
+        elif '/vehicle' in path:
+            status = 401
+            # Get token so we can get the fleet manager
+            fleetManager = self.get_fleet_manager_from_token(db)
+            #get correct fleet and add vehicle to it
+            if fleetManager is not None:
+                status = 200
+                fleet = fleetManager.accessFleet(client, postData['vType'])
+                fleet.addVehicle(client, postData)
+                responseBody = {
+                    "totalVehicles": fleet.totalVehicles
+                }
+
+
 
         elif '/dispatch' in path:
             status = 401
@@ -115,7 +138,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         # Get token
         fleetManager = self.get_fleet_manager_from_token(db)
 
-        if '/returnVehicle' in path:
+        if '/returnVehicles' in path:
             status = 403 # Not Authorized
             response = {
                 "message": "Not authorized"
@@ -123,8 +146,22 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
  
             if fleetManager is not None:
                 # Validate
-                cursor = db.Fleet.find({}, {'_id': 1, 'status': 1})
+                fleetIds = fleetManager.fleetIds
                 vehicles = []
+                for fleetId in fleetIds:
+                    cursor = db.Vehicle.find({"fleetId": fleetId},
+                                             {
+                                                 "_id": 1,
+                                                 "fleetId":  1,
+                                                 'status' : 1,
+                                                 "vType": 0,
+                                                 "location": 0,
+                                                 "dock": 0,
+                                                 "lastHeartbeat": 1
+                                             })
+                    for vehicle in cursor:
+                        vehicles = vehicles.append(vehicle)
+
                 response = vehicles
 
                 status = 200

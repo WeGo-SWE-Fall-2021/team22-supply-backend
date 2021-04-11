@@ -1,38 +1,43 @@
-import uuid
+from uuid import uuid4
 import time
 
 class Fleet():
     # class constructor, receives a dictionary and populates class attributes
     def __init__(self, dict):
-        self.id = str(dict.get('_id', uuid.uuid4()))
-        self.pluginIds = dict["pluginIds"]
-        self.totalVehicles = dict["totalVehicles"]
-        self.vType = dict["vType"]
+        self._id = str(dict.get('_id', uuid4()))
+        self._pluginIds = dict["pluginIds"]
+        self._totalVehicles = dict["totalVehicles"]
+        self._vType = dict["vType"]
 
     #---------- setters & getters -----------
     @property
     def id(self):
-        return self.id
-
-    @id.setter
-    def id(self, id):
-        self.id = id
+        return self._id
 
     @property
     def pluginIds(self):
-        return self.pluginIds
+        return self._pluginIds
 
     @pluginIds.setter
-    def pluginsIds(self, pluginIds):
-        self.pluginIds = pluginIds
+    def pluginIds(self, value):
+        self._pluginIds = value
 
     @property
     def totalVehicles(self):
-        return self.totalVehicles
+        return self._totalVehicles
 
     @totalVehicles.setter
-    def totalVehicles(self, totalVehicles):
-        self.totalVehicles = totalVehicles
+    def totalVehicles(self, value):
+        self._totalVehicles = value
+
+    @property
+    def vType(self):
+        return self._vType
+
+    @vType.setter
+    def vType(self, value):
+        self._vType = value
+
 
     #chooses a ready vehicle with the appropriate plugin
     #returns dict with Vehicle ID and current location
@@ -67,17 +72,13 @@ class Fleet():
         vehicleInfo = postData
         db = client['team22_' + 'supply']
         vehicle = db.Vehicle.insert_one({
-            '_id': uuid.uuid4(),
-            'fleetId': self.id,
-            'status' : 'available',
-            'location': vehicleInfo['location'],
+            '_id': uuid4(),
+            'fleetId': self._id,
+            'status' : vehicleInfo['status'],
+            'location': vehicleInfo['dock'],
             'dock': vehicleInfo['dock'],
-            'lastHeartbeat': str(time.time())
+            'lastHeartbeat': str(time.time()),
+            'vType' : vehicleInfo['vType']
         })
         self.totalVehicles += 1
-        update = db.Vehicle.update_one({'fleetId': self.id}, {"$set" : {'totalVehicles': int(self.totalVehicles)}})
-
-
-
-
-
+        db.Vehicle.update_one({'fleetId': self._id}, {"$set": {'totalVehicles': int(self._totalVehicles)}})

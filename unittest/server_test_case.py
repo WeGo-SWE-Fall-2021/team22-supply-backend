@@ -37,7 +37,7 @@ fleet_manager_data_one = {
 fleet_one = {
     "_id": "123",
     "fleetManagerId": fleet_manager_data_one["_id"],
-    "totalVehicles ": 1,
+    "totalVehicles": 1,
     "pluginIds": ["1", "2"],
     "vType":"food"
 }
@@ -87,14 +87,34 @@ class ServerTestCase(unittest.TestCase):
 
     def test_1_add_fleet_to_fleet_manager_1_request(self):
         payload = {
-            # json data to send
+            "totalVehicles": 0,
+            "pluginIds": ["3", "4"],
+            "vType": "medicine"
         }
+
         token = fleet_manager_data_one["token"]
         cookies = {
             'token': token
          }
         response = requests.post(f"http://localhost:{port}/fleet", cookies=cookies, json=payload, timeout=5)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.text)["fleetIds"], fleet_manager_data_one["fleetIds"])
+
+
+    def test_1_add_vehicle_to_fleet_1_request(self):
+        payload = {
+            'status': 'ready',
+            "vType": "food",
+            "dock": "dock address",
+        }
+
+        token = fleet_manager_data_one["token"]
+        cookies = {
+            'token': token
+         }
+        response = requests.post(f"http://localhost:{port}/vehicle", cookies=cookies, json=payload, timeout=5)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.text)["totalVehicles"], 2)
 
     def test_vehicle_1_location_dispatch_1(self):
         client = initMongoFromCloud("supply")
