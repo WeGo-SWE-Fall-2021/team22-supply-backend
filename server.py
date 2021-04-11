@@ -11,6 +11,7 @@ from http.server import BaseHTTPRequestHandler
 from mongoutils import initMongoFromCloud
 from fleetmanager import FleetManager
 from dispatch import Dispatch
+from fleet import Fleet
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     version = '0.1.0'
@@ -74,12 +75,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             }
 
             dispatch = Dispatch(dispatch_data)
-
-            fleet_data = db.Fleet.find_one({ "pluginIds": dispatch.pluginType})
+            fleet_data = db.Fleet.find_one({"pluginIds": dispatch.pluginType})
 
             if fleet_data is not None:
                 # Convert data to Fleet Object and request a vehicle
-                dispatch.vehicleId = "94012839137982347892349823498"
+                fleet = Fleet(fleet_data)
+                vehicleDict = fleet.findAvailableVehicle(client)
+
+                dispatch.vehicleId = vehicleDict['vehicleId']
                 db.Dispatch.insert_one({
                     "_id": dispatch.id,
                     "orderId": dispatch.orderId,
