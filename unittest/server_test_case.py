@@ -154,6 +154,21 @@ class ServerTestCase(unittest.TestCase):
         self.assertEqual(json.loads(response.text)["dispatch_status"], "processing")
         self.assertEqual(json.loads(response.text)["vehicleId"], "789")
 
+    def test_order_status_1(self):
+        payload = {
+            "orderId": "123"
+        }
+        client = initMongoFromCloud("supply")
+        db = client["team22_supply"]
+        dispatch = Dispatch(dispatch_one)
+        geocode_response = dispatch.requestForwardGeocoding()
+        directions_response = dispatch.requestDirections(client)
+        response = requests.post(f"http://localhost:{port}/status", json=payload, timeout=5)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(json.loads(response.text)["order_status"], "progress")
+        self.assertEqual(json.loads(response.text)["vehicle_starting_coordinate"], dispatch.getVehicleLocation(client))
+        self.assertEqual(json.loads(response.text)["destination_coordinate"], Dispatch.getCoordinateFromGeocodeResponse(geocode_response))
+        self.assertEqual(json.loads(response.text)["geometry"], Dispatch.getGeometry(directions_response))
 
     @classmethod
     def tearDownClass(cls):

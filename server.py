@@ -119,7 +119,27 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     'dispatch_status': dispatch.status,
                     'vehicleId': dispatch.vehicleId
                 }
+        elif '/status' in path:
+            status = 401
+            cursor = db.Dispatch.find({'orderId': postData["orderId"]})
+            for dis in cursor:
+                dispatch_data = dis
+            if dispatch_data is not None:
+                dispatch = Dispatch(dispatch_data)
+                # Get directions API and geocde API responses stored in variables
+                directions_response = dispatch.requestDirections(client)
+                geocode_response = dispatch.requestForwardGeocoding()
 
+                vehicle_starting_coordinate = dispatch.getVehicleLocation(client)
+                destination_coordinate = Dispatch.getCoordinateFromGeocodeResponse(geocode_response)
+                geometry = Dispatch.getGeometry(directions_response)
+                status = 201
+                responseBody = {
+                    'order_status': "progress",
+                    'vehicle_starting_coordinate': vehicle_starting_coordinate,
+                    'destination_coordinate': destination_coordinate,
+                    'geometry': geometry
+                }
         self.send_response(status)
         self.send_header("Content-Type", "text/html")
         self.end_headers()
