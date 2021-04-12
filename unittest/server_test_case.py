@@ -37,7 +37,7 @@ fleet_manager_data_one = {
 fleet_one = {
     "_id": "123",
     "fleetManagerId": fleet_manager_data_one["_id"],
-    "totalVehicles": 1,
+    "totalVehicles": "1",
     "pluginIds": ["1", "2"],
     "vType":"food"
 }
@@ -97,8 +97,12 @@ class ServerTestCase(unittest.TestCase):
             'token': token
          }
         response = requests.post(f"http://localhost:{port}/fleet", cookies=cookies, json=payload, timeout=5)
+        client = initMongoFromCloud("supply")
+        db = client["team22_supply"]
+        fleetCount = db.Fleet.count()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.text)["fleetIds"], fleet_manager_data_one["fleetIds"])
+        self.assertEqual(fleetCount, 2)
 
 
     def test_1_add_vehicle_to_fleet_1_request(self):
@@ -113,8 +117,12 @@ class ServerTestCase(unittest.TestCase):
             'token': token
          }
         response = requests.post(f"http://localhost:{port}/vehicle", cookies=cookies, json=payload, timeout=5)
+        client = initMongoFromCloud("supply")
+        db = client["team22_supply"]
+        vehicleCount = db.Vehicle.count()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(json.loads(response.text)["totalVehicles"], 2)
+        self.assertEqual(json.loads(response.text)["totalVehicles"], '2')
+        self.assertEqual(vehicleCount, 2)
 
     def test_vehicle_1_location_dispatch_1(self):
         client = initMongoFromCloud("supply")

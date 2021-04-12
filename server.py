@@ -85,8 +85,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     "totalVehicles": fleet.totalVehicles
                 }
 
-
-
         elif '/dispatch' in path:
             status = 401
             dispatch_data = {

@@ -80,5 +80,6 @@ class Fleet():
             'lastHeartbeat': str(time.time()),
             'vType' : vehicleInfo['vType']
         })
-        self.totalVehicles += 1
+        totalVehiclesInt = int(self._totalVehicles) + 1
+        self.totalVehicles = str(totalVehiclesInt)
         db.Vehicle.update_one({'fleetId': self._id}, {"$set": {'totalVehicles': int(self._totalVehicles)}})
