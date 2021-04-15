@@ -72,7 +72,7 @@ class Fleet():
         vehicleInfo = postData
         db = client['team22_' + 'supply']
         vehicle = db.Vehicle.insert_one({
-            '_id': uuid4(),
+            '_id': str(uuid4()),
             'fleetId': self._id,
             'status' : vehicleInfo['status'],
             'location': vehicleInfo['dock'],
@@ -82,4 +82,4 @@ class Fleet():
         })
         totalVehiclesInt = int(self._totalVehicles) + 1
         self.totalVehicles = str(totalVehiclesInt)
-        db.Vehicle.update_one({'fleetId': self._id}, {"$set": {'totalVehicles': int(self._totalVehicles)}})
+        db.Fleet.update_one({'fleetId': self.id}, {"$set": {'totalVehicles': int(self.totalVehicles)}})

@@ -147,8 +147,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = self.path
-        print(path)
-        status = 404
+        status = 400
         cloud = 'supply'
         client = initMongoFromCloud(cloud)
         db = client['team22_' + cloud]
@@ -189,6 +188,17 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     "email": fleetManager.email,
                     "username": fleetManager.username
                 }
+        elif '/getAllVehicles' in path:
+            vehicles = []
+            try:
+                cursor = db.Vehicle.find({})
+                for vehicle in cursor:
+                    vehicles.append(vehicle)
+                status = 200
+                response = vehicles
+                
+            except:
+                response = {'request': 'failed'}
 
         else:
             status = 400

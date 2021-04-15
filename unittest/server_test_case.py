@@ -125,25 +125,19 @@ class ServerTestCase(unittest.TestCase):
         self.assertEqual(vehicleCount, 2)
 
     def test_vehicle_1_location_dispatch_1(self):
-        client = initMongoFromCloud("supply")
-        db = client["team22_supply"]
         dispatch = Dispatch(dispatch_one)
         location = dispatch.getVehicleLocation(client)
         self.assertEqual(location, vehicle_one["location"])
 
     def test_dispatch_one_get_eta_1(self):
-        client = initMongoFromCloud("supply")
-        db = client["team22_supply"]
         dispatch = Dispatch(dispatch_one)
         dir_response = dispatch.requestDirections(client)
-        expected_eta = 713.188
+        expected_eta = 694.097
         # print(dir_response)
         actual_eta = Dispatch.getETAFromDirectionsResponse(dir_response)
         self.assertEqual(actual_eta, expected_eta)
 
     def test_dispatch_one_get_routes_1(self):
-        client = initMongoFromCloud("supply")
-        db = client["team22_supply"]
         dispatch = Dispatch(dispatch_one)
         dir_response = dispatch.requestDirections(client)
         expected_routes = type([[]])
@@ -177,6 +171,13 @@ class ServerTestCase(unittest.TestCase):
         self.assertEqual(json.loads(response.text)["vehicle_starting_coordinate"], dispatch.getVehicleLocation(client))
         self.assertEqual(json.loads(response.text)["destination_coordinate"], Dispatch.getCoordinateFromGeocodeResponse(geocode_response))
         self.assertEqual(json.loads(response.text)["geometry"], Dispatch.getGeometry(directions_response))
+
+    def test_VSIM_getAllVehicles_GET_Endpoint(self):
+        vehicleResponse = requests.get(f'http://localhost:{port}/getAllVehicles')
+        self.assertEqual(vehicleResponse.status_code, 200)
+        vehicles = json.loads(vehicleResponse.text)
+        self.assertTrue(vehicle_one in vehicles)
+
 
     @classmethod
     def tearDownClass(cls):
