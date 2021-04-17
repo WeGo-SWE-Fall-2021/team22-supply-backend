@@ -56,7 +56,7 @@ dispatch_one = {
     "_id": "454",
     "orderId": "123",
     "vehicleId": vehicle_one["_id"],
-    "status": "available",
+    "status": "in progress",
     "orderDestination": "3001 S Congress Ave, Austin, TX 78704",
     "pluginType": "1"
 }
@@ -165,9 +165,10 @@ class ServerTestCase(unittest.TestCase):
         dispatch = Dispatch(dispatch_one)
         geocode_response = dispatch.requestForwardGeocoding()
         directions_response = dispatch.requestDirections(client)
-        response = requests.post(f"http://localhost:{port}/status", json=payload, timeout=5)
+        response = requests.get(f"http://localhost:{port}/status?orderId=123")
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(json.loads(response.text)["order_status"], "progress")
+        #self.assertEqual(json.loads(response.text)['orderId'], "123")
+        self.assertEqual(json.loads(response.text)['order_status'], "in progress")
         self.assertEqual(json.loads(response.text)["vehicle_starting_coordinate"], dispatch.getVehicleLocation(client))
         self.assertEqual(json.loads(response.text)["destination_coordinate"], Dispatch.getCoordinateFromGeocodeResponse(geocode_response))
         self.assertEqual(json.loads(response.text)["geometry"], Dispatch.getGeometry(directions_response))
