@@ -76,7 +76,7 @@ class Fleet():
             'fleetId': self._id,
             'status' : vehicleInfo['status'],
             'location': vehicleInfo['dock'],
-            'dock': vehicleInfo['dock'],
+            'dock': "30.256937,-97.74562",
             'lastHeartbeat': str(time.time()),
             'vType' : vehicleInfo['vType']
         })

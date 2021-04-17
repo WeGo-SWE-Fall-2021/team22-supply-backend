@@ -78,6 +78,3 @@ class FleetManager(User):
 
 
         return returnFleet
-
-
-

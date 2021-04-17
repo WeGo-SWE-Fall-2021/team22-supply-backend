@@ -65,12 +65,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             # add fleet to fleet manager and Fleet collection
             if fleetManager is not None:
-                fleetManager.addFleet(client, postData)
                 status = 200
+                fleetManager.addFleet(client, postData)
                 responseBody = {
                     "fleetManager": fleetManager.id,
                     "fleetIds": fleetManager.fleetIds
                 }
+
 
         elif '/vehicle' in path:
             status = 401
