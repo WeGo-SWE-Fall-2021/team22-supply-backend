@@ -85,11 +85,12 @@ pipelines:
 
   default:
     - step: *build-and-unittest
-  
+    - step: *coverage-report
+
   branches:
     master:
       - step: *build-and-unittest
-
+      - step: *coverage-report
       - step:
           name: Deploy to Supply Cloud Production
           deployment: production
