@@ -37,7 +37,7 @@ fleet_manager_data_one = {
 fleet_one = {
     "_id": "123",
     "fleetManagerId": fleet_manager_data_one["_id"],
-    "totalVehicles": "1",
+    "totalVehicles": 1,
     "pluginIds": ["1", "2"],
     "vType":"food"
 }
@@ -97,11 +97,10 @@ class ServerTestCase(unittest.TestCase):
             'token': token
          }
         response = requests.post(f"http://localhost:{port}/fleet", cookies=cookies, json=payload, timeout=5)
-        client = initMongoFromCloud("supply")
-        db = client["team22_supply"]
         fleetCount = db.Fleet.count()
+        fleetManager1 = db.FleetManager.find_one({"_id": "1515646454"})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(json.loads(response.text)["fleetIds"], fleet_manager_data_one["fleetIds"])
+        self.assertEqual(json.loads(response.text)["fleetIds"], fleetManager1.get("fleetIds"))
         self.assertEqual(fleetCount, 2)
 
 
@@ -117,12 +116,11 @@ class ServerTestCase(unittest.TestCase):
             'token': token
          }
         response = requests.post(f"http://localhost:{port}/vehicle", cookies=cookies, json=payload, timeout=5)
-        client = initMongoFromCloud("supply")
-        db = client["team22_supply"]
-        vehicleCount = db.Vehicle.count()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(json.loads(response.text)["totalVehicles"], '2')
-        self.assertEqual(vehicleCount, 2)
+        self.assertEqual(json.loads(response.text)["totalVehicles"], 2)
+        fleet = db.Fleet.find_one({"_id": "123", "vType": "food"})
+        self.assertIsNotNone(fleet)
+        self.assertEqual(fleet["totalVehicles"], 2)
 
     def test_vehicle_1_location_dispatch_1(self):
         dispatch = Dispatch(dispatch_one)
@@ -178,6 +176,16 @@ class ServerTestCase(unittest.TestCase):
         self.assertEqual(vehicleResponse.status_code, 200)
         vehicles = json.loads(vehicleResponse.text)
         self.assertTrue(vehicle_one in vehicles)
+
+    def test_1_returnVehicle_GET(self):
+        token = fleet_manager_data_one["token"]
+        cookies = {
+            'token': token
+        }
+        response = requests.get(f'http://localhost:{port}/returnVehicles', cookies=cookies)
+        self.assertEqual(response.status_code, 200)
+        fleets = json.loads(response.text)
+        print(fleets)
 
 
     @classmethod

@@ -137,39 +137,31 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         # Get token
         fleetManager = self.get_fleet_manager_from_token(db)
 
+        #front end request for tables
         if '/returnVehicles' in path:
             status = 403 # Not Authorized
             response = {
                 "message": "Not authorized"
             }
- 
+
             if fleetManager is not None:
                 # Validate
                 fleetIds = fleetManager.fleetIds
+                fleetArray = []
                 vehicles = []
                 for fleetId in fleetIds:
                     cursor = db.Vehicle.find({"fleetId": fleetId},
                                              {
-                                                 "_id": 1,
-                                                 "fleetId":  1,
-                                                 'status' : 1,
-                                                 "vType": 0,
-                                                 "location": 0,
+                                                 "fleetId": 0,
                                                  "dock": 0,
-                                                 "lastHeartbeat": 1
                                              })
                     for vehicle in cursor:
-                        vehicles = vehicles.append(vehicle)
-
-                response = vehicles
-
+                        vehicles.append(vehicle)
+                fleetArray.append(vehicles)
+                response = fleetArray
                 status = 200
-                response = {
-                    "fname": fleetManager.firstName,
-                    "lname": fleetManager.lastName,
-                    "email": fleetManager.email,
-                    "username": fleetManager.username
-                }
+
+        # vehicle request
         elif '/getAllVehicles' in path:
             vehicles = []
             try:
@@ -181,6 +173,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 
             except:
                 response = {'request': 'failed'}
+
+        # demand request
         elif '/status' in path:
             parse.urlsplit(path)
             parse.parse_qs(parse.urlsplit(path).query)

@@ -66,7 +66,10 @@ class FleetManager(User):
         })
 
         #adding the fleet to the FleetManagers fleet array
-        db.FleetManager.update({'_id': self._id}, {'$addToSet': {'pluginIds': fleetID}})
+        db.FleetManager.update({'_id': self._id}, {'$push': {'fleetIds': fleetID}})
+        fleetIDArray = self._fleetIds
+        fleetIDArray.append(fleetID)
+        self._fleetIds = fleetIDArray
 
     # find and return the correct fleet based on the vType it is given
     def accessFleet(self, client, vType):
