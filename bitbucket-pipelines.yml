@@ -3,37 +3,86 @@
 image: python:3.8
 
 definitions:
+  caches:
+    xmllint: /usr/bin/
+    uuidgen: /usr/bin/
+    mongo: /usr/bin/
   services:
     mongo:
       image: mongo
   steps:
     - step: &build-and-unittest
+        max-time: 1
+        caches:
+          - mongo
+          - pip
         name: Build and Run Test
         script:
-          - echo "Setting up MongoDB"
-          - wget https://repo.mongodb.org/apt/debian/dists/buster/mongodb-org/4.4/main/binary-amd64/mongodb-org-shell_4.4.5_amd64.deb && apt install ./mongodb-org-shell_4.4.5_amd64.deb
-          - mongo --port 27017 --eval 'db.getSiblingDB("admin").createUser({ user:"admin", pwd:"'"$MONGO_ADMIN_PW"'", roles:[{role:"root", db:"admin"}]})'
-          - mongo --port 27017 -u 'admin' -p $MONGO_ADMIN_PW --authenticationDatabase 'admin' --eval 'db.getSiblingDB("team22_supply").createUser({ user:"developer", pwd:"'"$MONGO_TEAM_PW"'", roles:["readWrite"]})'
-          - echo "Finished setting up MongoDB"
+          - if ! which mongo >/dev/null; then wget https://repo.mongodb.org/apt/debian/dists/buster/mongodb-org/4.4/main/binary-amd64/mongodb-org-shell_4.4.5_amd64.deb; apt install ./mongodb-org-shell_4.4.5_amd64.deb; fi
+          - mongo --port 27017 --eval 'db.getSiblingDB("team22_supply").createUser({ user:"developer", pwd:"'"$MONGO_TEAM_PW"'", roles:["readWrite"]})'
+          - echo 'MONGO_SECRET="'"$MONGO_TEAM_PW"'"' > .env
           - cd ../
           - git clone git@bitbucket.org:swe-spring-2021-team-22/team22-common-services-backend.git
           - cd team22-common-services-backend/
           - echo 'MONGO_SECRET="'"$MONGO_TEAM_PW"'"' > .env
-          - python3 -m venv env
-          - source env/bin/activate
           - if [ -f requirements.txt ]; then python3 -m pip install -r requirements.txt; fi
           - cd ../build
-          - echo 'MONGO_SECRET="'"$MONGO_TEAM_PW"'"' > .env
-          - python3 -m venv env
-          - source env/bin/activate
           - if [ -f requirements.txt ]; then python3 -m pip install -r requirements.txt; fi
           - cd unittest
-          - python3 -m unittest discover -p "*test*.py" -v
-          - deactivate
+          - >
+            for i in *.py; do 
+                PY_MODULE=$(echo $i | cut -d '_' -f 1);  
+                python3 -m pytest --junitxml test-reports/${PY_MODULE}_report.xml --cov-report xml:${PY_MODULE}_coverage.xml --cov $PY_MODULE ${PY_MODULE}_test_case.py;
+            done
+          - cd ..
+        artifacts:
+            - unittest/*_coverage.xml
         services: 
           - mongo
 
+    - step: &coverage-report
+        name: Coverage Report
+        clone:
+          enabled: false
+        caches:
+          - uuidgen
+          - xmllint
+        script:
+          - apt-get update
+          - apt install uuid-runtime libxml2-utils
+          - >
+            for i in unittest/*_coverage.xml; do
+                REPORT_ID=$(uuidgen)
+                FILE_NAME=$(echo `basename $i` | cut -d '_' -f 1);
+                LINES_VALID=$(xmllint --xpath '/coverage/@lines-valid' unittest/${FILE_NAME}_coverage.xml | grep -v ">" | cut -f 2 -d "=" | tr -d \");
+                LINES_COVERED=$(xmllint --xpath '/coverage/@lines-covered' unittest/${FILE_NAME}_coverage.xml | grep -v ">" | cut -f 2 -d "=" | tr -d \");
+                COVERAGE=$(((LINES_COVERED / LINES_VALID) * 100));
+                if [[ $COVERAGE -gt 50 ]]; then STATE="PASSED"; else STATE="FAILED"; fi
+                curl --request PUT https://api.bitbucket.org/2.0/repositories/$BITBUCKET_REPO_FULL_NAME/commit/$BITBUCKET_COMMIT/reports/$REPORT_ID \
+                --header 'Authorization: Basic "'"$USER_AUTH"'"' \
+                --header 'Content-Type: application/json' \
+                --data-raw '{
+                        "title": "'$FILE_NAME'.py Coverage Report",
+                        "details": "This pull request has been scanned and checked for coverage report for `'"$FILE_NAME"'.py`.",
+                        "report_type": "COVERAGE",
+                        "reporter": "Pipelines",
+                        "result": "'$STATE'",
+                        "data": [
+                          {
+                            "title": "Coverage:",
+                            "type": "PERCENTAGE",
+                            "value": '$COVERAGE'
+                          }
+                        ]
+                }'
+            done
+
 pipelines:
+  pull-requests:
+    '**':
+      - step: *build-and-unittest
+      - step: *coverage-report
+
   default:
     - step: *build-and-unittest
   
@@ -42,11 +91,9 @@ pipelines:
       - step: *build-and-unittest
 
       - step:
-          name: Deploy to Supply Cloud
+          name: Deploy to Supply Cloud Production
+          deployment: production
+          clone:
+             enabled: false
           script:
-          - pipe: atlassian/ssh-run:0.3.0
-            variables:
-              SSH_USER: $USER
-              SERVER: $SUPPLY_SERVER
-              MODE: "command"
-              COMMAND: "/home/team22/webhooks/team22-redeploy.sh ${BITBUCKET_REPO_SLUG}"
+            - ssh -A -tt -i /opt/atlassian/pipelines/agent/ssh/id_rsa -o 'StrictHostKeyChecking=no' -p ${PORT:-22} $USER@$SUPPLY_SERVER "bash -c '/home/team22/webhooks/team22-redeploy.sh ${BITBUCKET_REPO_SLUG} ${BITBUCKET_COMMIT}'"
