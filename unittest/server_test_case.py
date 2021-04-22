@@ -4,12 +4,10 @@ import time
 import requests
 import json
 
-from threading import Thread
+sys.path.insert(1, sys.path[0] + "/../")
 
-sys.path.insert(1, "../")
-sys.path.insert(2, "../../team22-common-services-backend")
-sys.path.insert(2, "../../common-services-backend")
-from mongoutils import initMongoFromCloud
+from threading import Thread
+from utils.mongoutils import initMongoFromCloud
 from http.server import HTTPServer
 from server import SimpleHTTPRequestHandler
 from dispatch import Dispatch
@@ -18,8 +16,6 @@ from dispatch import Dispatch
 port = 4001
 
 # Defined data
-
-
 fleet_manager_data_one = {
     "_id": "1515646454",
     "firstName": "test_firstName",

@@ -1,10 +1,9 @@
 import unittest
 import sys
 
-sys.path.insert(1, "../")
+sys.path.insert(1, sys.path[0] + "/../")
 
 from fleetmanager import FleetManager
-
 
 class FleetManagerTestCase(unittest.TestCase):
 

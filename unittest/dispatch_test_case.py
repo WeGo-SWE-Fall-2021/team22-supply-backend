@@ -1,7 +1,7 @@
 import unittest
 import sys
 
-sys.path.insert(1, "../")
+sys.path.insert(1, sys.path[0] + "/../")
 
 from dispatch import Dispatch
 

@@ -1,14 +1,12 @@
 import json
 import sys
 import time
+
 from bson.objectid import ObjectId
-# Allow importing files from other directories
-sys.path.insert(1, '../team22-common-services-backend')
-sys.path.insert(1, '../common-services-backend')
 from urllib import parse
 from http.server import HTTPServer
 from http.server import BaseHTTPRequestHandler
-from mongoutils import initMongoFromCloud
+from utils.mongoutils import initMongoFromCloud
 from fleetmanager import FleetManager
 from dispatch import Dispatch
 from fleet import Fleet

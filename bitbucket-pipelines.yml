@@ -30,9 +30,9 @@ definitions:
           - if [ -f requirements.txt ]; then python3 -m pip install -r requirements.txt; fi
           - cd unittest
           - >
-            for i in *.py; do 
-                PY_MODULE=$(echo $i | cut -d '_' -f 1);  
-                python3 -m pytest --junitxml test-reports/${PY_MODULE}_report.xml --cov-report xml:${PY_MODULE}_coverage.xml --cov $PY_MODULE ${PY_MODULE}_test_case.py;
+            for i in *_test_case.py; do 
+                PY_MODULE=$(echo $i | sed 's/_test_case.py$//');  
+                python3 -m pytest --junitxml test-reports/${PY_MODULE}_report.xml --cov-report xml:${PY_MODULE}_coverage.xml --cov ${PY_MODULE} ${PY_MODULE}_test_case.py;
             done
           - cd ..
         artifacts:
@@ -49,40 +49,68 @@ definitions:
           - xmllint
         script:
           - apt-get update
-          - apt install uuid-runtime libxml2-utils
+          - apt install uuid-runtime libxml2-utils bc
           - >
-            for i in unittest/*_coverage.xml; do
-                REPORT_ID=$(uuidgen)
-                FILE_NAME=$(echo `basename $i` | cut -d '_' -f 1);
-                LINES_VALID=$(xmllint --xpath '/coverage/@lines-valid' unittest/${FILE_NAME}_coverage.xml | grep -v ">" | cut -f 2 -d "=" | tr -d \");
-                LINES_COVERED=$(xmllint --xpath '/coverage/@lines-covered' unittest/${FILE_NAME}_coverage.xml | grep -v ">" | cut -f 2 -d "=" | tr -d \");
-                COVERAGE=$(((LINES_COVERED / LINES_VALID) * 100));
+            for file_location in unittest/*_coverage.xml; do
+                REPORT_ID=$(uuidgen);
+                FILE_NAME=$(echo `basename $file_location` | sed 's/_coverage.xml$//');
+                LINES_VALID=$(xmllint --xpath '/coverage/@lines-valid' $file_location | grep -v ">" | cut -f 2 -d "=" | tr -d \");
+                LINES_COVERED=$(xmllint --xpath '/coverage/@lines-covered' $file_location | grep -v ">" | cut -f 2 -d "=" | tr -d \");
+                COVERAGE=$(echo "scale=2; ($LINES_COVERED / $LINES_VALID) * 100" | bc | sed 's/\..*$//');
                 if [[ $COVERAGE -gt 50 ]]; then STATE="PASSED"; else STATE="FAILED"; fi
+
                 curl --request PUT https://api.bitbucket.org/2.0/repositories/$BITBUCKET_REPO_FULL_NAME/commit/$BITBUCKET_COMMIT/reports/$REPORT_ID \
-                --header 'Authorization: Basic "'"$USER_AUTH"'"' \
+                --header "Authorization: Basic ${USER_AUTH}" \
                 --header 'Content-Type: application/json' \
                 --data-raw '{
-                        "title": "'$FILE_NAME'.py Coverage Report",
-                        "details": "This pull request has been scanned and checked for coverage report for `'"$FILE_NAME"'.py`.",
-                        "report_type": "COVERAGE",
-                        "reporter": "Pipelines",
-                        "result": "'$STATE'",
-                        "data": [
+                      "title": "'$FILE_NAME'.py Coverage Report",
+                      "details": "This pull request has been scanned and checked for coverage report for `'"$FILE_NAME"'.py`.",
+                      "report_type": "COVERAGE",
+                      "reporter": "Pipelines",
+                      "result": "'$STATE'",
+                      "external_id": "'$REPORT_ID'",
+                      "data": [
                           {
-                            "title": "Coverage:",
-                            "type": "PERCENTAGE",
-                            "value": '$COVERAGE'
+                              "title": "Coverage:",
+                              "type": "PERCENTAGE",
+                              "value": '$COVERAGE'
+                          },
+                          {
+                              "title": "Tested:",
+                              "type": "NUMBER",
+                              "value": '$LINES_COVERED'
+                          },
+                          {
+                              "title": "Not Tested:",
+                              "type": "NUMBER",
+                              "value": '$((LINES_VALID - LINES_COVERED))'
                           }
-                        ]
+                      ]
                 }'
+
+                k=1;
+                data="[";
+                while [[ $k -le $LINES_VALID ]]; do
+                    HITS=$(xmllint --xpath '//coverage/packages/package/classes/class/lines/line['${k}']/@hits' $file_location | grep -v ">" | cut -f 2 -d "=" | tr -d \"); 
+                    if [[ $HITS -eq 0 ]]; then
+                      ANNOTATIONS_ID=$(uuidgen);
+                      line_failed_number=$(xmllint --xpath '//coverage/packages/package/classes/class/lines/line['${k}']/@number' $file_location | grep -v ">" | cut -f 2 -d "=" | tr -d \");
+                      annotation='{ "external_id": "'$ANNOTATIONS_ID'", "title": "Coverage Test", "annotation_type": "CODE_SMELL", "result": "FAILED", "summary": "This line has not been tested using unittests.", "severity": "LOW", "path": "'$FILE_NAME'.py", "line": '$line_failed_number' },'
+                      data="${data}${annotation}";
+                    fi
+                    k=$((k + 1))
+                done
+
+                data=$(echo $data | sed '$ s/,$//');
+                data="${data}]";
+
+                curl https://api.bitbucket.org/2.0/repositories/$BITBUCKET_REPO_FULL_NAME/commit/$BITBUCKET_COMMIT/reports/$REPORT_ID/annotations \
+                -H "Authorization: Basic ${USER_AUTH}" \
+                -H 'Content-Type: application/json' \
+                -d "$data"
             done
 
 pipelines:
-  pull-requests:
-    '**':
-      - step: *build-and-unittest
-      - step: *coverage-report
-
   default:
     - step: *build-and-unittest
     - step: *coverage-report
