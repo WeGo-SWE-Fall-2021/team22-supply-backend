@@ -45,14 +45,30 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             }
             # Vehicle heartbeating / top update in DB
             vehicleId = postData.pop("vehicleId", None)
+            location = postData.pop("location", None)
+            vehicleStatus = postData.pop("status", None)
             lastHeartbeat = time.time()
 
-            postData["lastHeartbeat"] = lastHeartbeat
 
             # Update document in DB
-            result = db.Vehicle.replace_one({"_id" : ObjectId(vehicleId)}, postData)
+            vehicleStatusUpdate = db.Vehicle.update_one({"_id" : vehicleId}, {'$set' : {"status" : vehicleStatus}})
+            vehicleLocationUpdate = db.Vehicle.update_one({"_id" : vehicleId}, {'$set' : {"location" : location}})
+            lastHearbeatUpdate = db.Vehicle.update_one({"_id" : vehicleId}, {'$set' : {"lastHeartbeat" : lastHeartbeat}})
 
-            if result.matched_count == 1 and result.modified_count == 1:
+            statusUpdated = False
+            locationUpdated = False
+            lastHearbeatUpdated = False
+
+            if vehicleStatusUpdate.matched_count == 1 and vehicleStatusUpdate.modified_count == 1:
+                statusUpdated = True
+
+            if vehicleLocationUpdate.matched_count == 1 and vehicleLocationUpdate.modified_count == 1:
+                locationUpdated = True
+
+            if lastHearbeatUpdate.matched_count == 1 and lastHearbeatUpdate.modified_count == 1:
+                lastHearbeatUpdated = True
+
+            if statusUpdated or locationUpdated or lastHearbeatUpdated:
                 responseBody = {
                     'Heartbeat': 'Received'
                 }

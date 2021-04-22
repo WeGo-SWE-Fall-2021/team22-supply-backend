@@ -43,7 +43,7 @@ fleet_one = {
 }
 
 vehicle_one = {
-    "_id": "789",
+    "_id": "HUSERFEF-R3242-3453535-SFSFSFER242Y",
     "fleetId": fleet_one["_id"],
     'status' : 'ready',
     "vType": "food",
@@ -152,7 +152,7 @@ class ServerTestCase(unittest.TestCase):
         response = requests.post(f"http://localhost:{port}/dispatch", json=payload, timeout=5)
         self.assertEqual(response.status_code, 201)
         self.assertEqual(json.loads(response.text)["dispatch_status"], "processing")
-        self.assertEqual(json.loads(response.text)["vehicleId"], "789")
+        self.assertEqual(json.loads(response.text)["vehicleId"], "HUSERFEF-R3242-3453535-SFSFSFER242Y")
 
     def test_order_status_1(self):
         payload = {
@@ -186,6 +186,32 @@ class ServerTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         fleets = json.loads(response.text)
         print(fleets)
+
+    def test_vehicleHeartbeat_POST(self):
+        payload = {
+            "vehicleId": "HUSERFEF-R3242-3453535-SFSFSFER242Y",
+            'status' : 'busy',
+            "location": "0.0,0.0",
+            "dock": "uhhh fix me pls"
+            }
+        response = requests.post(f'http://localhost:{port}/vehicleHeartbeat', json = payload, timeout=5)
+        self.assertEqual(response.status_code, 200)
+        expectedResponse = {
+            'Heartbeat': 'Received'
+            }
+        self.assertEqual(json.loads(response.text), expectedResponse)
+        updatedVehicle = db.Vehicle.find_one({"_id" : payload["vehicleId"]})
+        self.assertEqual(updatedVehicle["status"], 'busy')
+        self.assertEqual(updatedVehicle["location"], '0.0,0.0')
+
+        # return db to original state
+        payload = {
+            "vehicleId": "HUSERFEF-R3242-3453535-SFSFSFER242Y",
+            'status' : 'ready',
+            "location": "-97.731010, 30.283930",
+            "dock": "uhhh fix me pls"
+            }
+        requests.post(f'http://localhost:{port}/vehicleHeartbeat', json = payload, timeout=5)
 
 
     @classmethod
