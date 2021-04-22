@@ -130,7 +130,7 @@ class ServerTestCase(unittest.TestCase):
     def test_dispatch_one_get_eta_1(self):
         dispatch = Dispatch(dispatch_one)
         dir_response = dispatch.requestDirections(client)
-        expected_eta = 694.097
+        expected_eta = 11
         # print(dir_response)
         actual_eta = Dispatch.getETAFromDirectionsResponse(dir_response)
         self.assertEqual(actual_eta, expected_eta)

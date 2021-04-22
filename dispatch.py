@@ -153,7 +153,8 @@ class Dispatch:
     # returns a float
     def getETAFromDirectionsResponse(json_response):
         eta = json_response["routes"][0]["legs"][0]["duration"]
-        return eta
+        eta_in_minutes = round(eta / 60)
+        return eta_in_minutes
 
     def __str__(self):
         return f"Dispatch (\nid: {self.id} \norderId: {self.orderId} \ncustomerId: {self.customerId} \norderDestination: {self.orderDestination} \nstatus: {self.status} \nvehicleId: {self.vehicleId} \n)"
