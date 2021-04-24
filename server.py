@@ -59,6 +59,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             vehicleLocationUpdate = db.Vehicle.update_one({"_id" : vehicleId}, {'$set' : {"location" : location}})
             lastHearbeatUpdate = db.Vehicle.update_one({"_id" : vehicleId}, {'$set' : {"lastHeartbeat" : lastHeartbeat}})
 
+
             statusUpdated = False
             locationUpdated = False
             lastHearbeatUpdated = False
@@ -76,6 +77,34 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 responseBody = {
                     'Heartbeat': 'Received'
                 }
+                # DatabaseUpdated
+                # Find a dispatch document from DB where vehicleId = vehicleId from postData
+                cursor = db.Dispatch.find_one({"vehicleId": vehicleId, "status": "processing"})
+                # dispatch status is processing responseBody -> heartbeat received, send coordinates
+                # dispatch status is in progress responseBody -> heartbeat received
+                # dispatch status is complete responseBody -> heartbeat received
+                if cursor is not None:
+                    dispatch1 = Dispatch(cursor)
+                    directions_response = dispatch1.requestDirections(client)
+                    coordinates = Dispatch.getRouteCoordinates(directions_response)
+                    dispatch1.status= "in progress" # Change dispatch status -> in progress
+                    db.Dispatch.update_one({"_id": dispatch1.id}, {'$set': {"status": dispatch1.status}})
+                    responseBody = {
+                        'Heartbeat': 'Received',
+                        'coordinates': coordinates,  # [ [90.560,45.503], [90.560,45.523] ]
+                    }
+                dispatch_data_2 = db.Dispatch.find_one({"vehicleId": vehicleId, "status": {'$ne': "complete"}})  # dispatch status is not complete
+                # check if vehicle coordinate == order location
+                if dispatch_data_2 is not None:
+                    dispatch2 = Dispatch(dispatch_data_2)
+                    geocode_response = dispatch2.requestForwardGeocoding()
+                    order_dest = Dispatch.getCoordinateFromGeocodeResponse(geocode_response)
+                    if location == order_dest:
+                        dispatch2.status = "complete"
+                        db.Dispatch.update_one({"_id": dispatch2.id}, {'$set': {"status": dispatch2.status}})
+                    # updates dispatch db status
+
+
                 status = 200 # DatabaseUpdated 
 
         elif '/fleet' in path:

@@ -48,15 +48,50 @@ vehicle_one = {
     "fleetId": fleet_one["_id"],
     'status' : 'ready',
     "vType": "food",
-    "location": "-97.731010, 30.283930",
+    "location": "-97.731010,30.283930",
     "dock": "uhhh fix me pls",
     "lastHeartbeat": "1234892919.655932"
 }
 
+vehicle_two = {
+    "_id": "HUSERFEF-R3242-3453535-SFSFSFER2420",
+    "fleetId": fleet_one["_id"],
+    'status' : 'ready',
+    "vType": "food",
+    "location": "-97.731010,30.283930",
+    "dock": "uhhh fix me pls",
+    "lastHeartbeat": "1234892919.655932"
+}
+vehicle_three = {
+    "_id": "HUSERFEF-R3242-3453535-SFSFSFER243Z",
+    "fleetId": fleet_one["_id"],
+    'status' : 'busy',
+    "vType": "food",
+    "location": "-97.731010,30.283930",
+    "dock": "uhhh fix me pls",
+    "lastHeartbeat": "1234892919.655932"
+}
 dispatch_one = {
     "_id": "454",
     "orderId": "123",
     "vehicleId": vehicle_one["_id"],
+    "status": "in progress",
+    "orderDestination": "3001 S Congress Ave, Austin, TX 78704",
+    "pluginType": "1"
+}
+dispatch_two = {
+    "_id": "455",
+    "orderId": "124",
+    "vehicleId": vehicle_two["_id"],
+    "status": "processing",
+    "orderDestination": "3001 S Congress Ave, Austin, TX 78704",
+    "pluginType": "1"
+}
+
+dispatch_three = {
+    "_id": "456",
+    "orderId": "124",
+    "vehicleId": vehicle_three["_id"],
     "status": "in progress",
     "orderDestination": "3001 S Congress Ave, Austin, TX 78704",
     "pluginType": "1"
@@ -83,9 +118,11 @@ class ServerTestCase(unittest.TestCase):
         db.FleetManager.insert_one(fleet_manager_data_one)
         db.Fleet.insert_one(fleet_one)
         db.Dispatch.insert_one(dispatch_one)
+        db.Dispatch.insert_one(dispatch_two)
+        db.Dispatch.insert_one(dispatch_three)
         db.Vehicle.insert_one(vehicle_one)
-
-
+        db.Vehicle.insert_one(vehicle_two)
+        db.Vehicle.insert_one(vehicle_three)
     def test_1_add_fleet_to_fleet_manager_1_request(self):
         payload = {
             "totalVehicles": 0,
@@ -202,12 +239,12 @@ class ServerTestCase(unittest.TestCase):
 
     def test_vehicleHeartbeat_POST(self):
         payload = {
-            "vehicleId": "HUSERFEF-R3242-3453535-SFSFSFER242Y",
-            'status' : 'busy',
-            "location": "0.0,0.0",
+            "vehicleId": "HUSERFEF-R3242-3453535-SFSFSFER243Z",
+            'status': 'busy',
+            "location": "-97.731010,30.283930",
             "dock": "uhhh fix me pls"
-            }
-        response = requests.post(f'http://localhost:{port}/vehicleHeartbeat', json = payload, timeout=5)
+        }
+        response = requests.post(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
         self.assertEqual(response.status_code, 200)
         expectedResponse = {
             'Heartbeat': 'Received'
@@ -215,17 +252,87 @@ class ServerTestCase(unittest.TestCase):
         self.assertEqual(json.loads(response.text), expectedResponse)
         updatedVehicle = db.Vehicle.find_one({"_id" : payload["vehicleId"]})
         self.assertEqual(updatedVehicle["status"], 'busy')
-        self.assertEqual(updatedVehicle["location"], '0.0,0.0')
+        self.assertEqual(updatedVehicle["location"], '-97.731010,30.283930')
 
         # return db to original state
         payload = {
             "vehicleId": "HUSERFEF-R3242-3453535-SFSFSFER242Y",
             'status' : 'ready',
-            "location": "-97.731010, 30.283930",
+            "location": "-97.731010,30.283930",
             "dock": "uhhh fix me pls"
             }
-        requests.post(f'http://localhost:{port}/vehicleHeartbeat', json = payload, timeout=5)
+        requests.post(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
 
+    def test_vehicleHeartbeat_POST_responses(self):
+        payload = {
+            "vehicleId": "HUSERFEF-R3242-3453535-SFSFSFER2420",
+            'status': 'ready',
+            "location": "-97.731010,30.283930",
+            "dock": "uhhh fix me pls"
+        }
+        db.Dispatch.update_one({"_id": "455"}, {'$set': {"status": "processing"}})
+        response = requests.post(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
+        actualTypeCoordinates = type(json.loads(response.text)["coordinates"])
+        expectedTypeCoordinates = type([])
+        self.assertEqual(actualTypeCoordinates, expectedTypeCoordinates)
+    def test_vehicleHeartbeat_POST_2(self):
+        payload = {
+            "vehicleId": "HUSERFEF-R3242-3453535-SFSFSFER243Z",
+            'status': 'busy',
+            "location": "-97.731010,30.283930",
+            "dock": "uhhh fix me pls"
+        }
+        response = requests.post(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
+        expectedResponse = {
+            'Heartbeat': 'Received'
+        }
+        self.assertEqual(json.loads(response.text), expectedResponse)
+        #self.assertEqual(json.loads(response.text)['cursor'], expectedResponse)
+
+    def test_vehicleHeartbeat_change_dispatch_status_1(self):
+        payload = {
+            "vehicleId": "HUSERFEF-R3242-3453535-SFSFSFER2420",
+            'status': 'ready',
+            "location": "-97.731010,30.283930",
+            "dock": "uhhh fix me pls"
+        }
+        db.Dispatch.update_one({"_id": "455"}, {'$set': {"status": "processing"}})
+        response = requests.post(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
+        expectedStatus = "in progress"
+        disDoc = db.Dispatch.find_one({"_id": "455"})
+        actualStatus = disDoc["status"]
+        self.assertEqual(expectedStatus, actualStatus)
+
+    def test_vehicleHeartbeat_change_dispatch_status_2(self):
+        db.Dispatch.update_one({"_id": "456"}, {'$set': {"status": "in progress"}})
+        dispatchObj = Dispatch(dispatch_three)
+        geo_response = dispatchObj.requestForwardGeocoding()
+        dest = Dispatch.getCoordinateFromGeocodeResponse(geo_response)
+        payload = {
+            "vehicleId": "HUSERFEF-R3242-3453535-SFSFSFER243Z",
+            'status': 'busy',
+            "location": dest,
+            "dock": "uhhh fix me pls"
+        }
+        response = requests.post(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
+        expectedStatus = "complete"
+        disDoc = db.Dispatch.find_one({"_id": "456"})
+        actualStatus = disDoc["status"]
+        self.assertEqual(expectedStatus, actualStatus)
+
+    def test_vehicleHeartbeat_change_dispatch_status_3(self):
+        db.Dispatch.update_one({"_id": "456"}, {'$set': {"status": "in progress"}})
+        payload = {
+            "vehicleId": "HUSERFEF-R3242-3453535-SFSFSFER243Z",
+            'status': 'busy',
+            "location": '-97.731010,30.283930',
+            "dock": "uhhh fix me pls"
+        }
+        response = requests.post(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
+        expectedStatus = "in progress"
+        disDoc = db.Dispatch.find_one({"_id": "456"})
+        actualStatus = disDoc["status"]
+        self.assertEqual(expectedStatus, actualStatus)
 
     @classmethod
     def tearDownClass(cls):
