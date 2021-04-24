@@ -242,13 +242,25 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 vehicle_starting_coordinate = dispatch.getVehicleLocation(client)
                 destination_coordinate = Dispatch.getCoordinateFromGeocodeResponse(geocode_response)
                 geometry = Dispatch.getGeometry(directions_response)
-                status = 201
+                status = 200
                 response = {
                     'order_status': dispatch.status,
                     'vehicle_starting_coordinate': vehicle_starting_coordinate,
                     'destination_coordinate': destination_coordinate,
                     'geometry': geometry
                 }
+        elif '/getVehicleLocation' in path:
+            parse.urlsplit(path)
+            parse.parse_qs(parse.urlsplit(path).query)
+            parameters = dict(parse.parse_qsl(parse.urlsplit(path).query))
+            vehicleid = parameters.get('vehicleId')
+            vehicle_data = db.Vehicle.find_one({'_id': vehicleid})
+            if vehicle_data is not None:
+                response = {
+                    'location': vehicle_data['location']
+                }
+                status = 200
+
 
         else:
             status = 400

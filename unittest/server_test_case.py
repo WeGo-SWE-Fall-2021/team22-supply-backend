@@ -210,7 +210,7 @@ class ServerTestCase(unittest.TestCase):
         geocode_response = dispatch.requestForwardGeocoding()
         directions_response = dispatch.requestDirections(client)
         response = requests.get(f"http://localhost:{port}/status?orderId=123")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
         #self.assertEqual(json.loads(response.text)['orderId'], "123")
         self.assertEqual(json.loads(response.text)['order_status'], "in progress")
         self.assertEqual(json.loads(response.text)["vehicle_starting_coordinate"], dispatch.getVehicleLocation(client))
@@ -333,7 +333,11 @@ class ServerTestCase(unittest.TestCase):
         disDoc = db.Dispatch.find_one({"_id": "456"})
         actualStatus = disDoc["status"]
         self.assertEqual(expectedStatus, actualStatus)
-
+    def test_getvehicleLocation_1(self):
+        response = requests.get(f"http://localhost:{port}/getVehicleLocation?vehicleId=HUSERFEF-R3242-3453535-SFSFSFER2420")
+        expectedLocation = '-97.731010,30.283930'
+        actualLocation = json.loads(response.text)['location']
+        self.assertEqual(actualLocation, expectedLocation)
     @classmethod
     def tearDownClass(cls):
         # tear down server
