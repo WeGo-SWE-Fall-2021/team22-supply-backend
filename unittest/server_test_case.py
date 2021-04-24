@@ -3,6 +3,7 @@ import sys
 import time
 import requests
 import json
+import jwt
 
 sys.path.insert(1, sys.path[0] + "/../")
 
@@ -11,6 +12,11 @@ from utils.mongoutils import initMongoFromCloud
 from http.server import HTTPServer
 from server import SimpleHTTPRequestHandler
 from dispatch import Dispatch
+from dotenv import load_dotenv
+from os import getenv
+
+
+load_dotenv()
 
 # Global variables used in the unittest
 port = 4001
@@ -24,7 +30,6 @@ fleet_manager_data_one = {
     "email": "test@test.com",
     "username": "test_username",
     "password": "test_password",
-    "token": "tokennnnn",
     "dockAddress": "addy",
     "dockNumber": "number", 
     "fleetIds": ["123"]
@@ -88,7 +93,11 @@ class ServerTestCase(unittest.TestCase):
             "vType": "medicine"
         }
 
-        token = fleet_manager_data_one["token"]
+        # Generate a jwt token
+        token_secret = getenv("TOKEN_SECRET")
+        token = jwt.encode({ 
+            "user_id": fleet_manager_data_one["_id"]
+            }, token_secret, algorithm="HS256")
         cookies = {
             'token': token
          }
@@ -107,7 +116,11 @@ class ServerTestCase(unittest.TestCase):
             "dock": "dock address",
         }
 
-        token = fleet_manager_data_one["token"]
+        # Generate a jwt token
+        token_secret = getenv("TOKEN_SECRET")
+        token = jwt.encode({ 
+            "user_id": fleet_manager_data_one["_id"]
+            }, token_secret, algorithm="HS256")
         cookies = {
             'token': token
          }
@@ -174,10 +187,14 @@ class ServerTestCase(unittest.TestCase):
         self.assertTrue(vehicle_one in vehicles)
 
     def test_1_returnVehicle_GET(self):
-        token = fleet_manager_data_one["token"]
+        # Generate a jwt token
+        token_secret = getenv("TOKEN_SECRET")
+        token = jwt.encode({ 
+            "user_id": fleet_manager_data_one["_id"]
+            }, token_secret ,algorithm="HS256")
         cookies = {
             'token': token
-        }
+         }
         response = requests.get(f'http://localhost:{port}/returnVehicles', cookies=cookies)
         self.assertEqual(response.status_code, 200)
         fleets = json.loads(response.text)

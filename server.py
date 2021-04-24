@@ -1,6 +1,7 @@
 import json
 import sys
 import time
+import jwt
 
 from bson.objectid import ObjectId
 from urllib import parse
@@ -10,6 +11,11 @@ from utils.mongoutils import initMongoFromCloud
 from fleetmanager import FleetManager
 from dispatch import Dispatch
 from fleet import Fleet
+from os import getenv
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     version = '0.1.0'
@@ -227,12 +233,17 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         client.close()
 
     def get_fleet_manager_from_token(self, db):
-        tokenStr = self.headers["Cookie"]
-        if tokenStr is not None:
-            token = tokenStr.split('=')[1]
-            user = db.FleetManager.find_one({"token": token})
-            if user is not None:
-                return FleetManager(user)
+        try:
+            tokenStr = self.headers["Cookie"]
+            if tokenStr is not None:
+                token = tokenStr.split('token=')[1]
+                if token != "":
+                    token_secret = getenv("TOKEN_SECRET")
+                    token_decoded = jwt.decode(token, token_secret, algorithms="HS256")
+                    user_data = db.FleetManager.find_one({ "_id": token_decoded["user_id"]})
+                    return FleetManager(user_data)
+        except:
+            pass
         return None
 
 def main():

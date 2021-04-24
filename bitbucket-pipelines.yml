@@ -21,10 +21,12 @@ definitions:
           - if ! which mongo >/dev/null; then wget https://repo.mongodb.org/apt/debian/dists/buster/mongodb-org/4.4/main/binary-amd64/mongodb-org-shell_4.4.5_amd64.deb; apt install ./mongodb-org-shell_4.4.5_amd64.deb; fi
           - mongo --port 27017 --eval 'db.getSiblingDB("team22_supply").createUser({ user:"developer", pwd:"'"$MONGO_TEAM_PW"'", roles:["readWrite"]})'
           - echo 'MONGO_SECRET="'"$MONGO_TEAM_PW"'"' > .env
+          - echo 'TOKEN_SECRET="'"$TOKEN_SECRET"'"' >> .env
           - cd ../
           - git clone git@bitbucket.org:swe-spring-2021-team-22/team22-common-services-backend.git
           - cd team22-common-services-backend/
           - echo 'MONGO_SECRET="'"$MONGO_TEAM_PW"'"' > .env
+          - echo 'TOKEN_SECRET="'"$TOKEN_SECRET"'"' >> .env
           - if [ -f requirements.txt ]; then python3 -m pip install -r requirements.txt; fi
           - cd ../build
           - if [ -f requirements.txt ]; then python3 -m pip install -r requirements.txt; fi
