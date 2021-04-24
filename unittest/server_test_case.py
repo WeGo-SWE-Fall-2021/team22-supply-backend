@@ -76,16 +76,14 @@ dispatch_one = {
     "orderId": "123",
     "vehicleId": vehicle_one["_id"],
     "status": "in progress",
-    "orderDestination": "3001 S Congress Ave, Austin, TX 78704",
-    "pluginType": "1"
+    "orderDestination": "3001 S Congress Ave, Austin, TX 78704"
 }
 dispatch_two = {
     "_id": "455",
     "orderId": "124",
     "vehicleId": vehicle_two["_id"],
     "status": "processing",
-    "orderDestination": "3001 S Congress Ave, Austin, TX 78704",
-    "pluginType": "1"
+    "orderDestination": "3001 S Congress Ave, Austin, TX 78704"
 }
 
 dispatch_three = {
@@ -93,8 +91,7 @@ dispatch_three = {
     "orderId": "124",
     "vehicleId": vehicle_three["_id"],
     "status": "in progress",
-    "orderDestination": "3001 S Congress Ave, Austin, TX 78704",
-    "pluginType": "1"
+    "orderDestination": "3001 S Congress Ave, Austin, TX 78704"
 }
 
 client = initMongoFromCloud("supply")
@@ -193,7 +190,7 @@ class ServerTestCase(unittest.TestCase):
         payload = {
             "orderId": "8965",
             "orderDestination": "Austin, TX",
-            "pluginType": "1"
+            "vehicleType": "food"
         }
         response = requests.post(f"http://localhost:{port}/dispatch", json=payload, timeout=5)
         self.assertEqual(response.status_code, 201)

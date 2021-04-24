@@ -141,12 +141,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 "orderId": postData["orderId"],
                 "vehicleId": "0",
                 "orderDestination": postData["orderDestination"],
-                "status": "processing",
-                "pluginType": postData["pluginType"]
+                "status": "processing"
             }
 
             dispatch = Dispatch(dispatch_data)
-            fleet_data = db.Fleet.find_one({"pluginIds": dispatch.pluginType})
+            vehicleType = postData["vehicleType"]
+            fleet_data = db.Fleet.find_one({"vType": vehicleType})
 
             if fleet_data is not None:
                 # Convert data to Fleet Object and request a vehicle
@@ -159,8 +159,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     "orderId": dispatch.orderId,
                     "vehicleId": dispatch.vehicleId,
                     "status": dispatch.status,
-                    "orderDestination": dispatch.orderDestination,
-                    "pluginType": dispatch.pluginType
+                    "orderDestination": dispatch.orderDestination
                 })
                 status = 201 # request is created
                 responseBody = {

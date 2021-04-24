@@ -28,7 +28,6 @@ class Dispatch:
         self._vehicleId = dict["vehicleId"]
         self._orderDestination = dict["orderDestination"]
         self._status = dict["status"]
-        self._pluginType = dict["pluginType"]
 
     # Read only property of Dispatch Id
     @property
@@ -75,16 +74,6 @@ class Dispatch:
     @vehicleId.setter
     def vehicleId(self, value):
         self._vehicleId = value 
-
-    @property
-    def pluginType(self):
-        return self._pluginType
-
-    # Set vehicle id
-    @pluginType.setter
-    def pluginType(self, value):
-        self._pluginType = value 
-
 
     # Method Description: Sends a HTTP Request of Forward Geocoding Mapbox API
     # pre-condition: "nothing??"
@@ -148,4 +137,4 @@ class Dispatch:
         return eta_in_minutes
 
     def __str__(self):
-        return f"Dispatch (\nid: {self.id} \norderId: {self.orderId} \ncustomerId: {self.customerId} \norderDestination: {self.orderDestination} \nstatus: {self.status} \nvehicleId: {self.vehicleId} \n)"
+        return f"Dispatch (\nid: {self.id} \norderId: {self.orderId} \norderDestination: {self.orderDestination} \nstatus: {self.status} \nvehicleId: {self.vehicleId} \n)"
