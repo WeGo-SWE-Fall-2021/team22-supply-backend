@@ -29,9 +29,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         postBodyDict = json.loads(postBodyString)
         return postBodyDict
 
-    # handle post requests
-    def do_POST(self):
-        status = 400  # HTTP Request: Not found
+    # This method handles and data updated that already exists on the database,
+    def do_PUT(self):
+        status = 400  # HTTP Request: Bad request
         postData = self.extract_POST_Body()  # store POST data into a dictionary
         path = self.path
         cloud = 'supply'
@@ -54,7 +54,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             location = postData.pop("location", None)
             vehicleStatus = postData.pop("status", None)
             lastHeartbeat = time.time()
-
 
             # Update document in DB
             vehicleStatusUpdate = db.Vehicle.update_one({"_id" : vehicleId}, {'$set' : {"status" : vehicleStatus}})
@@ -114,9 +113,31 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         dispatch.status = "complete"
                         db.Dispatch.update_one({"_id": dispatch.id}, {'$set': {"status": dispatch.status}})                    
 
-                status = 201 # DatabaseUpdated 
+                status = 200 # DatabaseUpdated 
 
-        elif '/fleet' in path:
+        self.send_response(status)
+        self.send_header("Content-Type", "text/html")
+        self.end_headers()
+        responseString = json.dumps(responseBody).encode('utf-8')
+        self.wfile.write(responseString)
+        client.close()
+
+
+    # handle post requests
+    def do_POST(self):
+        status = 400  # HTTP Request: Not found
+        postData = self.extract_POST_Body()  # store POST data into a dictionary
+        path = self.path
+        cloud = 'supply'
+        client = initMongoFromCloud(cloud)
+        db = client['team22_' + cloud]
+
+        responseBody = {
+            'status': 'failed',
+            'message': 'Bad request'
+        }
+
+        if '/fleet' in path:
             status = 401
             # Get token so we can get the fleet manager
             fleetManager = self.get_fleet_manager_from_token(db)

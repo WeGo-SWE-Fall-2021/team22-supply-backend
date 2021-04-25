@@ -238,8 +238,8 @@ class ServerTestCase(unittest.TestCase):
             "location": "-97.731010,30.283930",
             "dock": "-97.731010,30.283930"
         }
-        response = requests.post(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
-        self.assertEqual(response.status_code, 201)
+        response = requests.put(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
+        self.assertEqual(response.status_code, 200)
         expectedResponse = {
             'Heartbeat': 'Received'
             }
@@ -255,7 +255,7 @@ class ServerTestCase(unittest.TestCase):
             "location": "-97.731010,30.283930",
             "dock": "-97.731010,30.283930"
             }
-        requests.post(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
+        requests.put(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
 
     def test_vehicleHeartbeat_POST_responses(self):
         payload = {
@@ -265,7 +265,7 @@ class ServerTestCase(unittest.TestCase):
             "dock": "uhhh fix me pls"
         }
         db.Dispatch.update_one({"_id": "455"}, {'$set': {"status": "processing"}})
-        response = requests.post(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
+        response = requests.put(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
         actualTypeCoordinates = type(json.loads(response.text)["coordinates"])
         expectedTypeCoordinates = type([])
         self.assertEqual(actualTypeCoordinates, expectedTypeCoordinates)
@@ -276,7 +276,7 @@ class ServerTestCase(unittest.TestCase):
             "location": "-97.731010,30.283930",
             "dock": "-97.731010,30.283930"
         }
-        response = requests.post(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
+        response = requests.put(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
         expectedResponse = {
             'Heartbeat': 'Received'
         }
@@ -291,7 +291,7 @@ class ServerTestCase(unittest.TestCase):
             "dock": "-97.731010,30.283930"
         }
         db.Dispatch.update_one({"_id": "455"}, {'$set': {"status": "processing"}})
-        response = requests.post(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
+        response = requests.put(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
         expectedStatus = "in progress"
         disDoc = db.Dispatch.find_one({"_id": "455"})
         actualStatus = disDoc["status"]
@@ -308,7 +308,7 @@ class ServerTestCase(unittest.TestCase):
             "location": dest,
             "dock": "-97.731010,30.283930"
         }
-        response = requests.post(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
+        response = requests.put(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
         expectedStatus = "complete"
         disDoc = db.Dispatch.find_one({"_id": "456"})
         actualStatus = disDoc["status"]
@@ -322,7 +322,7 @@ class ServerTestCase(unittest.TestCase):
             "location": '-97.731010,30.283930',
             "dock": "-97.731010,30.283930"
         }
-        response = requests.post(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
+        response = requests.put(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
         expectedStatus = "in progress"
         disDoc = db.Dispatch.find_one({"_id": "456"})
         actualStatus = disDoc["status"]
