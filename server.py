@@ -90,6 +90,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     dispatch_dict = dispatch_queue.get()
                     if vehicle_data != None and vehicle_data["vType"] == dispatch_dict["vehicleType"]:
                         dispatch_data = db.Dispatch.find_one({ "_id": dispatch_dict["dispatchId"], "vehicleId": "" })
+                        dispatch_data["vehicleId"] = vehicleId
                     else:
                         dispatch_queue.put((1, dispatch_dict))
                 # dispatch status is processing responseBody -> heartbeat received, send coordinates
