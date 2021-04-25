@@ -92,6 +92,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     responseBody = {
                         'Heartbeat': 'Received',
                         'coordinates': coordinates,  # [ [90.560,45.503], [90.560,45.523] ]
+                        'duration': directions_response["routes"][0]["legs"][0]["duration"]
                     }
                 dispatch_data_2 = db.Dispatch.find_one({"vehicleId": vehicleId, "status": {'$ne': "complete"}})  # dispatch status is not complete
                 # check if vehicle coordinate == order location
@@ -99,6 +100,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     dispatch2 = Dispatch(dispatch_data_2)
                     geocode_response = dispatch2.requestForwardGeocoding()
                     order_dest = Dispatch.getCoordinateFromGeocodeResponse(geocode_response)
+                    directions_response2 = dispatch2.requestDirections(client)
+                    coordinates2 = Dispatch.getRouteCoordinates(directions_response2)
+                    responseBody ={
+                        'Heartbeat': 'Received',
+                        'coordinates': coordinates2,
+                        'duration': directions_response2["routes"][0]["legs"][0]["duration"]
+                    }
                     if location == order_dest:
                         dispatch2.status = "complete"
                         db.Dispatch.update_one({"_id": dispatch2.id}, {'$set': {"status": dispatch2.status}})

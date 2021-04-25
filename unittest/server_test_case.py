@@ -245,7 +245,7 @@ class ServerTestCase(unittest.TestCase):
         expectedResponse = {
             'Heartbeat': 'Received'
             }
-        self.assertEqual(json.loads(response.text), expectedResponse)
+        self.assertEqual(json.loads(response.text)['Heartbeat'], expectedResponse['Heartbeat'])
         updatedVehicle = db.Vehicle.find_one({"_id" : payload["vehicleId"]})
         self.assertEqual(updatedVehicle["status"], 'busy')
         self.assertEqual(updatedVehicle["location"], '-97.731010,30.283930')
@@ -282,7 +282,7 @@ class ServerTestCase(unittest.TestCase):
         expectedResponse = {
             'Heartbeat': 'Received'
         }
-        self.assertEqual(json.loads(response.text), expectedResponse)
+        self.assertEqual(json.loads(response.text)['Heartbeat'], expectedResponse['Heartbeat'])
         #self.assertEqual(json.loads(response.text)['cursor'], expectedResponse)
 
     def test_vehicleHeartbeat_change_dispatch_status_1(self):
