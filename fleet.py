@@ -62,3 +62,10 @@ class Fleet():
         totalVehiclesInt = self.totalVehicles + 1
         self.totalVehicles = totalVehiclesInt
         db.Fleet.update_one({'_id': self.id}, {"$set": {'totalVehicles': totalVehiclesInt}})
+
+    def deleteVehicle(self, db, vehicleId):
+        db.Vehicle.delete_one({"_id": vehicleId, "fleetId": self.id})
+        totalVehiclesInt = self.totalVehicles - 1
+        self.totalVehicles = totalVehiclesInt
+        db.Fleet.update_one({'_id': self.id}, {"$set": {'totalVehicles': totalVehiclesInt}})
+

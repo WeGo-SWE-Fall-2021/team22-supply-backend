@@ -32,7 +32,7 @@ fleet_manager_data_one = {
     "password": "test_password",
     "dockAddress": "addy",
     "dockNumber": "number", 
-    "fleetIds": ["123"]
+    "fleetIds": ["123","123456789"]
 }
 
 fleet_one = {
@@ -40,6 +40,13 @@ fleet_one = {
     "fleetManagerId": fleet_manager_data_one["_id"],
     "totalVehicles": 1,
     "vType":"food"
+}
+
+fleet_two = {
+    "_id": "123456789",
+    "fleetManagerId": fleet_manager_data_one["_id"],
+    "totalVehicles": 1,
+    "vType":"storage"
 }
 
 vehicle_one = {
@@ -66,6 +73,15 @@ vehicle_three = {
     "fleetId": fleet_one["_id"],
     'status' : 'busy',
     "vType": "food",
+    "location": "-97.731010,30.283930",
+    "dock": "-97.731010,30.283930",
+    "lastHeartbeat": "1234892919.655932"
+}
+vehicle_four = {
+    "_id": "696969",
+    "fleetId": fleet_two["_id"],
+    'status' : 'busy',
+    "vType": "storage",
     "location": "-97.731010,30.283930",
     "dock": "-97.731010,30.283930",
     "lastHeartbeat": "1234892919.655932"
@@ -111,24 +127,19 @@ class ServerTestCase(unittest.TestCase):
         cls._server_thread = Thread(None, cls._server.serve_forever)
         cls._server_thread.start()
 
-        db.FleetManager.remove()
-        db.Fleet.remove()
-        db.Dispatch.remove()
-        db.Vehicle.remove()
-
         db.FleetManager.insert_one(fleet_manager_data_one)
         db.Fleet.insert_one(fleet_one)
+        db.Fleet.insert_one(fleet_two)
         db.Dispatch.insert_one(dispatch_one)
         db.Dispatch.insert_one(dispatch_two)
         db.Dispatch.insert_one(dispatch_three)
         db.Vehicle.insert_one(vehicle_one)
         db.Vehicle.insert_one(vehicle_two)
         db.Vehicle.insert_one(vehicle_three)
-
+        db.Vehicle.insert_one(vehicle_four)
     def test_1_add_fleet_to_fleet_manager_1_request(self):
         payload = {
             "totalVehicles": 0,
-            "pluginIds": ["3", "4"],
             "vType": "medicine"
         }
 
@@ -145,7 +156,7 @@ class ServerTestCase(unittest.TestCase):
         fleetManager1 = db.FleetManager.find_one({"_id": "1515646454"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.text)["fleetIds"], fleetManager1.get("fleetIds"))
-        self.assertEqual(fleetCount, 2)
+        self.assertEqual(fleetCount, 3)
 
 
     def test_1_add_vehicle_to_fleet_1_request(self):
@@ -343,6 +354,25 @@ class ServerTestCase(unittest.TestCase):
         expectedLocation = '-97.731010,30.283930'
         actualLocation = json.loads(response.text)['location']
         self.assertEqual(actualLocation, expectedLocation)
+
+    def test_deleteVehicle_1(self):
+        payload = {
+            "_id" : "696969",
+            "vType" : "storage"
+        }
+        # Generate a jwt token
+        token_secret = getenv("TOKEN_SECRET")
+        token = jwt.encode({
+            "user_id": fleet_manager_data_one["_id"]
+        }, token_secret, algorithm="HS256")
+        cookies = {
+            'token': token
+        }
+        response = requests.post(f'http://localhost:{port}/deleteVehicle',cookies = cookies, json=payload, timeout=10)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.text)["totalVehicles"], 0)
+
+
 
     @classmethod
     def tearDownClass(cls):

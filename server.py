@@ -152,6 +152,22 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     "fleetIds": fleetManager.fleetIds
                 }
 
+        elif '/deleteVehicle' in path:
+            status = 401
+            vehicleId = postData.get('_id')
+            vType = postData.get('vType')
+
+            fleetManager = self.get_fleet_manager_from_token(db)
+
+            # add fleet to fleet manager and Fleet collection
+            if fleetManager is not None:
+                status = 200
+                fleet = fleetManager.accessFleet(db, vType)
+                fleet.deleteVehicle(db, vehicleId)
+                responseBody = {
+                    "totalVehicles" : fleet.totalVehicles,
+                }
+
 
         elif '/vehicle' in path:
             status = 401
@@ -262,6 +278,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         vehicles.append(vehicle)
 
                     fleetArray.append(vehicles)
+                    vehicles = []
                 response = fleetArray
                 status = 200
 
