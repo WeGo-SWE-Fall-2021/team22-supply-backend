@@ -205,7 +205,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                                              })
                     for vehicle in cursor:
                         vehicles.append(vehicle)
-                fleetArray.append(vehicles)
+
+                    fleetArray.append(vehicles)
                 response = fleetArray
                 status = 200
 

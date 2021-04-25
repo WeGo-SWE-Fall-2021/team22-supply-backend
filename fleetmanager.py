@@ -61,7 +61,6 @@ class FleetManager(User):
             '_id': fleetID,
             'fleetManagerId': self._id,
             'totalVehicles': fleetInfo['totalVehicles'],
-            'pluginIds' : fleetInfo['pluginIds'],
             'vType' : fleetInfo['vType']
         })
 

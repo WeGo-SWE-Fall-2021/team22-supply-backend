@@ -5,7 +5,6 @@ class Fleet():
     # class constructor, receives a dictionary and populates class attributes
     def __init__(self, dict):
         self._id = str(dict.get('_id', uuid4()))
-        self._pluginIds = dict["pluginIds"]
         self._totalVehicles = dict["totalVehicles"]
         self._vType = dict["vType"]
 
@@ -13,14 +12,6 @@ class Fleet():
     @property
     def id(self):
         return self._id
-
-    @property
-    def pluginIds(self):
-        return self._pluginIds
-
-    @pluginIds.setter
-    def pluginIds(self, value):
-        self._pluginIds = value
 
     @property
     def totalVehicles(self):
@@ -51,15 +42,7 @@ class Fleet():
         if vehicle is not None:
             vehicleId = vehicle['_id']
             currentLocation = vehicle['location']
-            # update vehicle status to 'busy'
-            #myquery = {"_id": vehicleId}
 
-            #status = 'busy'
-            #newvalues = {"$set": {"status": status}}
-
-            #update = db.Vehicle.update_one(myquery, newvalues)
-
-            #fill the return dict with vehicle id and current location
             returnDict['vehicleId'] = vehicleId
             returnDict['location'] = currentLocation
         else:
@@ -76,7 +59,7 @@ class Fleet():
             'fleetId': self._id,
             'status' : vehicleInfo['status'],
             'location': vehicleInfo['dock'],
-            'dock': "30.256937,-97.74562",
+            'dock': vehicleInfo['dock'],
             'lastHeartbeat': str(time.time()),
             'vType' : vehicleInfo['vType']
         })

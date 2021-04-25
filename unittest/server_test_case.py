@@ -39,7 +39,6 @@ fleet_one = {
     "_id": "123",
     "fleetManagerId": fleet_manager_data_one["_id"],
     "totalVehicles": 1,
-    "pluginIds": ["1", "2"],
     "vType":"food"
 }
 
@@ -330,11 +329,13 @@ class ServerTestCase(unittest.TestCase):
         disDoc = db.Dispatch.find_one({"_id": "456"})
         actualStatus = disDoc["status"]
         self.assertEqual(expectedStatus, actualStatus)
+
     def test_getvehicleLocation_1(self):
         response = requests.get(f"http://localhost:{port}/getVehicleLocation?vehicleId=HUSERFEF-R3242-3453535-SFSFSFER2420")
         expectedLocation = '-97.731010,30.283930'
         actualLocation = json.loads(response.text)['location']
         self.assertEqual(actualLocation, expectedLocation)
+
     @classmethod
     def tearDownClass(cls):
         # tear down server
