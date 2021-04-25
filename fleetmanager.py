@@ -52,9 +52,8 @@ class FleetManager(User):
         return f"FleetManager (\nid: {self.id} \nfirstName: {self.firstName} \nlastName: {self.lastName} \nphoneNumber: {self.phoneNumber} \nemail: {self.email} \nusername: {self.username} \npassword: {self.password} \ndockNumber: {self.dockNumber} \ndockAddress: {self.dockAddress} \n fleetIds: {self.fleetIds} \n)"
 
     #adds a new fleet to Fleet Collection and to FleetManager plugins array
-    def addFleet(self, client, postData):
+    def addFleet(self, db, postData):
         fleetInfo = postData
-        db = client['team22_' + 'supply']
         fleet = Fleet(postData)
         fleetID = fleet.id
         fleet = db.Fleet.insert_one({
@@ -71,9 +70,7 @@ class FleetManager(User):
         self._fleetIds = fleetIDArray
 
     # find and return the correct fleet based on the vType it is given
-    def accessFleet(self, client, vType):
-        db = client['team22_' + 'supply']
-
+    def accessFleet(self, db, vType):
         fleet_data = db.Fleet.find_one({'fleetManagerId': self._id, 'vType': vType})
         if fleet_data is not None:
             returnFleet = Fleet(fleet_data)

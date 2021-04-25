@@ -5,10 +5,12 @@ import sys
 
 from utils.mongoutils import initMongoFromCloud
 from uuid import uuid4
+from dotenv import load_dotenv
+from os import getenv
 
 class Dispatch:
     # constant variable (class variable) api key:
-    API_KEY = "pk.eyJ1IjoibmRhbHRvbjEiLCJhIjoiY2tsNWlkMHBwMTlncDJwbGNuNzJ6OGo2ciJ9.QbcnC4OnBjZU6P6JN6m3Pw"
+    API_KEY = getenv("MAPBOX_API_SECRET")
     # Constructor. Initializes Dispatch from parameter values *** CAN ONLY ALLOW ONE CONSTRUCTOR ***
     # def __init__(self, orderId, customerId, orderDestination, status, vehicleId):
     #     self._id = uuid4()
@@ -93,16 +95,14 @@ class Dispatch:
 
     # Method Description: Grabs the vehicle location from the supply database
     #
-    def getVehicleLocation(self, client):
-        db = client['team22_'+'supply']
+    def getVehicleLocation(self, db):
         dictionary = db.Vehicle.find_one({'_id' : self.vehicleId})
         location = ""
         if dictionary is not None:
             location = dictionary["location"]
         return location
 
-    def getDock(self, client):
-        db = client['team22_' + 'supply']
+    def getDock(self, db):
         dictionary = db.Vehicle.find_one({'_id': self.vehicleId})
         dock = ""
         if dictionary is not None:
@@ -111,10 +111,10 @@ class Dispatch:
     # Method Description: Sends a HTTP Request of Directions Mapbox API
     # pre-condition: "nothing??"
     # post-condition: returns the JSON response of Directions Mapbox API
-    def requestDirections(self, client):
+    def requestDirections(self, db):
         forward_geocoding_json = self.requestForwardGeocoding()
         destination_coordinate = Dispatch.getCoordinateFromGeocodeResponse(forward_geocoding_json)
-        directionsURL = "https://api.mapbox.com/directions/v5/mapbox/driving/" + self.getDock(client) + ";" + destination_coordinate + "?geometries=geojson&overview=full&steps=true&access_token=" + self.API_KEY
+        directionsURL = "https://api.mapbox.com/directions/v5/mapbox/driving/" + self.getDock(db) + ";" + destination_coordinate + "?geometries=geojson&overview=full&steps=true&access_token=" + self.API_KEY
         response = requests.get(directionsURL)
         directionsData = json.loads(response.text)
         return directionsData

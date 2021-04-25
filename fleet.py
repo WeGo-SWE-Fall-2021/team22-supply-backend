@@ -32,12 +32,9 @@ class Fleet():
 
     #chooses a ready vehicle with the appropriate plugin
     #returns dict with Vehicle ID and current location
-    def findAvailableVehicle(self,client):
+    def findAvailableVehicle(self, db):
         returnDict = {}
-        status = 'ready'
-        db = client['team22_' + 'supply']
-
-        vehicle = db.Vehicle.find_one({'status': status, 'fleetId': self.id})
+        vehicle = db.Vehicle.find_one({'status': 'ready', 'fleetId': self.id})
 
         if vehicle is not None:
             vehicleId = vehicle['_id']
@@ -51,9 +48,8 @@ class Fleet():
         return returnDict
 
     #addes vehicle to vehicle collection
-    def addVehicle(self, client, postData):
+    def addVehicle(self, db, postData):
         vehicleInfo = postData
-        db = client['team22_' + 'supply']
         vehicle = db.Vehicle.insert_one({
             '_id': str(uuid4()),
             'fleetId': self._id,

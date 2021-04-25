@@ -13,12 +13,14 @@ from dispatch import Dispatch
 from fleet import Fleet
 from os import getenv
 from dotenv import load_dotenv
+from queue import PriorityQueue
 
 load_dotenv()
 
+dispatch_queue = PriorityQueue()
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
-    version = '0.1.0'
+    version = '0.2.0'
 
     # Reads the POST data from the HTTP header
     def extract_POST_Body(self):
@@ -78,42 +80,40 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     'Heartbeat': 'Received'
                 }
                 # DatabaseUpdated
-                # Find a dispatch document from DB where vehicleId = vehicleId from postData
-                cursor = db.Dispatch.find_one({"vehicleId": vehicleId, "status": "processing"})
+                # Find a dispatch document from DB where vehicleId = vehicleId from postData that is not complete
+                dispatch_data = db.Dispatch.find_one({"vehicleId": vehicleId, "status": {'$ne': "complete"}})
+
+                if dispatch_data is None and not dispatch_queue.empty():
+                    '''if vehicle is not assigned to a dispatch that says either 'processing' or 'in progress', 
+                    then check if dispatch queue can assign the vehicle to a new dispatch
+                    '''
+                    vehicle_data = db.Vehicle.find_one({ "_id": vehicleId })
+                    dispatch_dict = dispatch_queue.get()
+                    if vehicle_data != None and vehicleStatus == 'ready' and vehicle_data["vehicleType"] == dispatch_dict["vehicleType"]:
+                        dispatch_dict = dispatch_queue.get()
+                        dispatch_data = db.Dispatch.find_one({ "_id": dispatch_dict["dispatchId"] })
+                    else:
+                        dispatch_queue.put((1, dispatch_dict))
                 # dispatch status is processing responseBody -> heartbeat received, send coordinates
-                # dispatch status is in progress responseBody -> heartbeat received
+                # dispatch status is in progress responseBody -> heartbeat received, send coordinates
                 # dispatch status is complete responseBody -> heartbeat received
-                if cursor is not None:
-                    dispatch1 = Dispatch(cursor)
-                    directions_response = dispatch1.requestDirections(client)
+                if dispatch_data is not None:
+                    dispatch = Dispatch(dispatch_data)
+                    directions_response = dispatch.requestDirections(db)
                     coordinates = Dispatch.getRouteCoordinates(directions_response)
-                    dispatch1.status= "in progress" # Change dispatch status -> in progress
-                    db.Dispatch.update_one({"_id": dispatch1.id}, {'$set': {"status": dispatch1.status}})
+                    dispatch.status= "in progress" # Change dispatch status -> in progress
+                    db.Dispatch.update_one({"_id": dispatch.id}, {'$set': {"status": dispatch.status, "vehicleId": vehicleId }})
                     responseBody = {
                         'Heartbeat': 'Received',
                         'coordinates': coordinates,  # [ [90.560,45.503], [90.560,45.523] ]
                         'duration': directions_response["routes"][0]["legs"][0]["duration"]
                     }
-                dispatch_data_2 = db.Dispatch.find_one({"vehicleId": vehicleId, "status": {'$ne': "complete"}})  # dispatch status is not complete
-                # check if vehicle coordinate == order location
-                if dispatch_data_2 is not None:
-                    dispatch2 = Dispatch(dispatch_data_2)
-                    geocode_response = dispatch2.requestForwardGeocoding()
-                    order_dest = Dispatch.getCoordinateFromGeocodeResponse(geocode_response)
-                    directions_response2 = dispatch2.requestDirections(client)
-                    coordinates2 = Dispatch.getRouteCoordinates(directions_response2)
-                    responseBody ={
-                        'Heartbeat': 'Received',
-                        'coordinates': coordinates2,
-                        'duration': directions_response2["routes"][0]["legs"][0]["duration"]
-                    }
-                    last_coordinate = coordinates2[len(coordinates2)-1]
-                    last_coordinate_string = str(last_coordinate[0])+ ","+str(last_coordinate[1])
+                    last_coordinate = coordinates[len(coordinates)-1]
+                    last_coordinate_string = f"{last_coordinate[0]},{last_coordinate[1]}"
+                    # check if vehicle coordinate == order location
                     if location == last_coordinate_string:
-                        dispatch2.status = "complete"
-                        db.Dispatch.update_one({"_id": dispatch2.id}, {'$set': {"status": dispatch2.status}})
-                    # updates dispatch db status
-
+                        dispatch.status = "complete"
+                        db.Dispatch.update_one({"_id": dispatch.id}, {'$set': {"status": dispatch.status}})                    
 
                 status = 200 # DatabaseUpdated 
 
@@ -125,7 +125,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             # add fleet to fleet manager and Fleet collection
             if fleetManager is not None:
                 status = 200
-                fleetManager.addFleet(client, postData)
+                fleetManager.addFleet(db, postData)
                 responseBody = {
                     "fleetManager": fleetManager.id,
                     "fleetIds": fleetManager.fleetIds
@@ -139,8 +139,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             #get correct fleet and add vehicle to it
             if fleetManager is not None:
                 status = 200
-                fleet = fleetManager.accessFleet(client, postData['vType'])
-                fleet.addVehicle(client, postData)
+                fleet = fleetManager.accessFleet(db, postData['vType'])
+                fleet.addVehicle(db, postData)
                 responseBody = {
                     "totalVehicles": fleet.totalVehicles
                 }
@@ -156,26 +156,37 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             dispatch = Dispatch(dispatch_data)
             vehicleType = postData["vehicleType"]
-            fleet_data = db.Fleet.find_one({"vType": vehicleType})
 
-            if fleet_data is not None:
-                # Convert data to Fleet Object and request a vehicle
+            cursor = db.Fleet.find({ "vType": vehicleType })
+
+            selected_fleet_data = None
+            vehicle_id = ""
+            for fleet_data in cursor:
                 fleet = Fleet(fleet_data)
-                vehicleDict = fleet.findAvailableVehicle(client)
+                vehicle_data = fleet.findAvailableVehicle(db)
+                if vehicle_data != {}:
+                    # once it finds a vehicle then save the id
+                    vehicle_id = vehicle_data["vehicleId"]
+                    break
 
-                dispatch.vehicleId = vehicleDict['vehicleId']
-                db.Dispatch.insert_one({
-                    "_id": dispatch.id,
-                    "orderId": dispatch.orderId,
-                    "vehicleId": dispatch.vehicleId,
-                    "status": dispatch.status,
-                    "orderDestination": dispatch.orderDestination
-                })
-                status = 201 # request is created
-                responseBody = {
-                    'dispatch_status': dispatch.status,
-                    'vehicleId': dispatch.vehicleId
-                }
+            dispatch.vehicleId = vehicle_id
+            db.Dispatch.insert_one({
+                "_id": dispatch.id,
+                "orderId": dispatch.orderId,
+                "vehicleId": dispatch.vehicleId,
+                "status": dispatch.status,
+                "orderDestination": dispatch.orderDestination
+            })
+
+            if vehicle_id == "":
+                # add dispatch to queue because there was no available vehicles for it
+                dispatch_queue.append({ "dispatchId": dispatch.id, "vehicleType": vehicleType })
+            status = 201 # request is created
+            responseBody = {
+                'dispatch_status': dispatch.status,
+                'vehicleId': dispatch.vehicleId
+            }
+            # There was no vehicle available for the specific fleet, add to a queue
 
         self.send_response(status)
         self.send_header("Content-Type", "text/html")
@@ -246,10 +257,10 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if dispatch_data is not None:
                 dispatch = Dispatch(dispatch_data)
                 # Get directions API and geocde API responses stored in variables
-                directions_response = dispatch.requestDirections(client)
+                directions_response = dispatch.requestDirections(db)
                 geocode_response = dispatch.requestForwardGeocoding()
 
-                vehicle_starting_coordinate = dispatch.getVehicleLocation(client)
+                vehicle_starting_coordinate = dispatch.getVehicleLocation(db)
                 destination_coordinate = Dispatch.getCoordinateFromGeocodeResponse(geocode_response)
                 geometry = Dispatch.getGeometry(directions_response)
                 status = 200
@@ -270,8 +281,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     'location': vehicle_data['location']
                 }
                 status = 200
-
-
         else:
             status = 400
             response = {'received': 'nope'}

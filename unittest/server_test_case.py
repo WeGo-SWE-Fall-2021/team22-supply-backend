@@ -166,12 +166,12 @@ class ServerTestCase(unittest.TestCase):
 
     def test_vehicle_1_location_dispatch_1(self):
         dispatch = Dispatch(dispatch_one)
-        location = dispatch.getVehicleLocation(client)
+        location = dispatch.getVehicleLocation(db)
         self.assertEqual(location, vehicle_one["location"])
 
     def test_dispatch_one_get_eta_1(self):
         dispatch = Dispatch(dispatch_one)
-        dir_response = dispatch.requestDirections(client)
+        dir_response = dispatch.requestDirections(db)
         expected_eta = 11
         # print(dir_response)
         actual_eta = Dispatch.getETAFromDirectionsResponse(dir_response)
@@ -179,7 +179,7 @@ class ServerTestCase(unittest.TestCase):
 
     def test_dispatch_one_get_routes_1(self):
         dispatch = Dispatch(dispatch_one)
-        dir_response = dispatch.requestDirections(client)
+        dir_response = dispatch.requestDirections(db)
         expected_routes = type([[]])
         # print(dir_response)
         actual_routes = type(Dispatch.getRouteCoordinates(dir_response))
@@ -200,16 +200,14 @@ class ServerTestCase(unittest.TestCase):
         payload = {
             "orderId": "123"
         }
-        client = initMongoFromCloud("supply")
-        db = client["team22_supply"]
         dispatch = Dispatch(dispatch_one)
         geocode_response = dispatch.requestForwardGeocoding()
-        directions_response = dispatch.requestDirections(client)
+        directions_response = dispatch.requestDirections(db)
         response = requests.get(f"http://localhost:{port}/status?orderId=123")
         self.assertEqual(response.status_code, 200)
         #self.assertEqual(json.loads(response.text)['orderId'], "123")
         self.assertEqual(json.loads(response.text)['order_status'], "in progress")
-        self.assertEqual(json.loads(response.text)["vehicle_starting_coordinate"], dispatch.getVehicleLocation(client))
+        self.assertEqual(json.loads(response.text)["vehicle_starting_coordinate"], dispatch.getVehicleLocation(db))
         self.assertEqual(json.loads(response.text)["destination_coordinate"], Dispatch.getCoordinateFromGeocodeResponse(geocode_response))
         self.assertEqual(json.loads(response.text)["geometry"], Dispatch.getGeometry(directions_response))
 
