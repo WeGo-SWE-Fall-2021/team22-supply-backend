@@ -111,6 +111,11 @@ class ServerTestCase(unittest.TestCase):
         cls._server_thread = Thread(None, cls._server.serve_forever)
         cls._server_thread.start()
 
+        db.FleetManager.remove()
+        db.Fleet.remove()
+        db.Dispatch.remove()
+        db.Vehicle.remove()
+
         db.FleetManager.insert_one(fleet_manager_data_one)
         db.Fleet.insert_one(fleet_one)
         db.Dispatch.insert_one(dispatch_one)
@@ -119,6 +124,7 @@ class ServerTestCase(unittest.TestCase):
         db.Vehicle.insert_one(vehicle_one)
         db.Vehicle.insert_one(vehicle_two)
         db.Vehicle.insert_one(vehicle_three)
+
     def test_1_add_fleet_to_fleet_manager_1_request(self):
         payload = {
             "totalVehicles": 0,
@@ -204,12 +210,16 @@ class ServerTestCase(unittest.TestCase):
         geocode_response = dispatch.requestForwardGeocoding()
         directions_response = dispatch.requestDirections(db)
         response = requests.get(f"http://localhost:{port}/status?orderId=123")
+        json_data = json.loads(response.text)
         self.assertEqual(response.status_code, 200)
-        #self.assertEqual(json.loads(response.text)['orderId'], "123")
-        self.assertEqual(json.loads(response.text)['order_status'], "in progress")
-        self.assertEqual(json.loads(response.text)["vehicle_starting_coordinate"], dispatch.getVehicleLocation(db))
-        self.assertEqual(json.loads(response.text)["destination_coordinate"], Dispatch.getCoordinateFromGeocodeResponse(geocode_response))
-        self.assertEqual(json.loads(response.text)["geometry"], Dispatch.getGeometry(directions_response))
+        self.assertEqual(json_data['status'], "success")
+        self.assertEqual(json_data['dispatches'], [{
+            'orderId': payload["orderId"],
+            'dispatchStatus': dispatch.status,
+            'vehicleLocation': dispatch.getVehicleLocation(db),
+            'destinationCoordinate': Dispatch.getCoordinateFromGeocodeResponse(geocode_response),
+            'geometry': Dispatch.getGeometry(directions_response)
+        }])
 
     def test_VSIM_getAllVehicles_GET_Endpoint(self):
         vehicleResponse = requests.get(f'http://localhost:{port}/getAllVehicles')

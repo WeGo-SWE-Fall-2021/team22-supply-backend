@@ -88,7 +88,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     '''
                     vehicle_data = db.Vehicle.find_one({ "_id": vehicleId, "status": "ready" })
                     dispatch_dict = dispatch_queue.get()
-                    if vehicle_data != None and vehicle_data["vType"] == dispatch_dict["vehicleType"]:
+                    if vehicle_data is not None and vehicle_data["vType"] == dispatch_dict["vehicleType"]:
                         dispatch_data = db.Dispatch.find_one({ "_id": dispatch_dict["dispatchId"], "vehicleId": "" })
                         dispatch_data["vehicleId"] = vehicleId
                     else:
@@ -178,7 +178,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             vehicleType = postData.get("vehicleType", None)
 
             # Check and make sure order ID is not none and order destination is not none
-            if dispatch.orderId != None and dispatch.orderDestination != None and vehicleType != None:
+            if dispatch.orderId is not None and dispatch.orderDestination is not None and vehicleType is not None:
                 # Avoid multiple duplicate dispatch of same order ID
                 if db.Dispatch.find_one({ "orderId": dispatch.orderId }) == None:
                     vehicle_id = ""
@@ -230,7 +230,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         cloud = 'supply'
         client = initMongoFromCloud(cloud)
         db = client['team22_' + cloud]
-        response = {}
+        response = {
+            'status': 'failed',
+            'message': 'Bad request'
+        }
+
+        parameters = dict(parse.parse_qsl(parse.urlsplit(path).query))
+
         # Get token
         fleetManager = self.get_fleet_manager_from_token(db)
 
@@ -268,50 +274,58 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     vehicles.append(vehicle)
                 status = 200
                 response = vehicles
-                
+
             except:
                 response = {'request': 'failed'}
 
-        # demand request
+        # This request handles multiple dispatch orders status
         elif '/status' in path:
-            parse.urlsplit(path)
-            parse.parse_qs(parse.urlsplit(path).query)
-            parameters = dict(parse.parse_qsl(parse.urlsplit(path).query))
-            orderid_dict = {'orderId': parameters.get('orderId')}
-            cursor = db.Dispatch.find(orderid_dict)
-            dispatch_data = {}
-            for dis in cursor:
-                dispatch_data = dis
-            if dispatch_data is not None:
-                dispatch = Dispatch(dispatch_data)
-                # Get directions API and geocde API responses stored in variables
-                directions_response = dispatch.requestDirections(db)
-                geocode_response = dispatch.requestForwardGeocoding()
+            parameters = parse.parse_qs(parse.urlsplit(path).query)
 
-                vehicle_starting_coordinate = dispatch.getVehicleLocation(db)
-                destination_coordinate = Dispatch.getCoordinateFromGeocodeResponse(geocode_response)
-                geometry = Dispatch.getGeometry(directions_response)
-                status = 200
-                response = {
-                    'order_status': dispatch.status,
-                    'vehicle_starting_coordinate': vehicle_starting_coordinate,
-                    'destination_coordinate': destination_coordinate,
-                    'geometry': geometry
-                }
+            # Receives an array of order ids
+            orderids_dict = parameters.get('orderId', None) 
+
+            if orderids_dict is not None and len(orderids_dict) != 0:
+                cursor = db.Dispatch.find({ "orderId": { "$in": orderids_dict } })
+                dispatches_data = []
+
+                for dispatch_data in cursor:
+                    dispatch = Dispatch(dispatch_data)
+                    # Get directions API and geocde API responses stored in variables
+                    directions_response = dispatch.requestDirections(db)
+                    geocode_response = dispatch.requestForwardGeocoding()
+                    vehicle_current_location = dispatch.getVehicleLocation(db)
+                    destination_coordinate = Dispatch.getCoordinateFromGeocodeResponse(geocode_response)
+                    geometry = Dispatch.getGeometry(directions_response)
+                    dispatches_data.append({
+                        'orderId': dispatch.orderId,
+                        'dispatchStatus': dispatch.status,
+                        'vehicleLocation': vehicle_current_location,
+                        'destinationCoordinate': destination_coordinate,
+                        'geometry': geometry
+                    })
+                if len(dispatches_data) != 0:
+                    status = 200
+                    response = {
+                        'status': 'success',
+                        'message': 'Retrieved dispatches information',
+                        'dispatches': dispatches_data
+                    }
+                else:
+                    status = 404 # Yes, I know this is used for files not found but technically this data wasnt found either
+                    response = {
+                        'status':  'failed', # Was able to parse request but there was no data found
+                        'message': 'There was no dispatches within the given order ids.'
+                    }
         elif '/getVehicleLocation' in path:
-            parse.urlsplit(path)
-            parse.parse_qs(parse.urlsplit(path).query)
-            parameters = dict(parse.parse_qsl(parse.urlsplit(path).query))
-            vehicleid = parameters.get('vehicleId')
-            vehicle_data = db.Vehicle.find_one({'_id': vehicleid})
-            if vehicle_data is not None:
-                response = {
-                    'location': vehicle_data['location']
-                }
-                status = 200
-        else:
-            status = 400
-            response = {'received': 'nope'}
+            vehicleid = parameters.get('vehicleId', None)
+            if vehicleid is not None:
+                vehicle_data = db.Vehicle.find_one({'_id': vehicleid})
+                if vehicle_data is not None:
+                    response = {
+                        'location': vehicle_data['location']
+                    }
+                    status = 200
 
         self.send_response(status)
         self.send_header('Content-type', 'application/json')
