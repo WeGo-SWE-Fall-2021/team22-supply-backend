@@ -180,7 +180,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             if vehicle_id == "":
                 # add dispatch to queue because there was no available vehicles for it
-                dispatch_queue.append({ "dispatchId": dispatch.id, "vehicleType": vehicleType })
+                dispatch_queue.put({ "dispatchId": dispatch.id, "vehicleType": vehicleType })
             status = 201 # request is created
             responseBody = {
                 'dispatch_status': dispatch.status,
