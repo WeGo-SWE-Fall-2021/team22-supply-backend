@@ -107,7 +107,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         'coordinates': coordinates2,
                         'duration': directions_response2["routes"][0]["legs"][0]["duration"]
                     }
-                    if location == order_dest:
+                    last_coordinate = coordinates2[len(coordinates2)-1]
+                    last_coordinate_string = str(last_coordinate[0])+ ","+str(last_coordinate[1])
+                    if location == last_coordinate_string:
                         dispatch2.status = "complete"
                         db.Dispatch.update_one({"_id": dispatch2.id}, {'$set': {"status": dispatch2.status}})
                     # updates dispatch db status
