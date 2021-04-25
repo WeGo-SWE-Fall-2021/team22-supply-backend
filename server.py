@@ -31,7 +31,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     # handle post requests
     def do_POST(self):
-        status = 404  # HTTP Request: Not found
+        status = 400  # HTTP Request: Not found
         postData = self.extract_POST_Body()  # store POST data into a dictionary
         path = self.path
         cloud = 'supply'
@@ -40,7 +40,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         responseBody = {
             'status': 'failed',
-            'message': 'Request not found'
+            'message': 'Bad request'
         }
 
         if '/vehicleHeartbeat' in path:
@@ -83,15 +83,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 # Find a dispatch document from DB where vehicleId = vehicleId from postData that is not complete
                 dispatch_data = db.Dispatch.find_one({"vehicleId": vehicleId, "status": {'$ne': "complete"}})
 
-                if dispatch_data is None and not dispatch_queue.empty():
+                if dispatch_data == None and not dispatch_queue.empty():
                     '''if vehicle is not assigned to a dispatch that says either 'processing' or 'in progress', 
-                    then check if dispatch queue can assign the vehicle to a new dispatch
+                    then check if dispatch queue can assign the vehicle to a new dispatch if it's ready
                     '''
-                    vehicle_data = db.Vehicle.find_one({ "_id": vehicleId })
+                    vehicle_data = db.Vehicle.find_one({ "_id": vehicleId, "status": "ready" })
                     dispatch_dict = dispatch_queue.get()
-                    if vehicle_data != None and vehicleStatus == 'ready' and vehicle_data["vehicleType"] == dispatch_dict["vehicleType"]:
-                        dispatch_dict = dispatch_queue.get()
-                        dispatch_data = db.Dispatch.find_one({ "_id": dispatch_dict["dispatchId"] })
+                    if vehicle_data != None and vehicle_data["vType"] == dispatch_dict["vehicleType"]:
+                        dispatch_data = db.Dispatch.find_one({ "_id": dispatch_dict["dispatchId"], "vehicleId": "" })
                     else:
                         dispatch_queue.put((1, dispatch_dict))
                 # dispatch status is processing responseBody -> heartbeat received, send coordinates
@@ -115,7 +114,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         dispatch.status = "complete"
                         db.Dispatch.update_one({"_id": dispatch.id}, {'$set': {"status": dispatch.status}})                    
 
-                status = 200 # DatabaseUpdated 
+                status = 201 # DatabaseUpdated 
 
         elif '/fleet' in path:
             status = 401
@@ -146,47 +145,54 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 }
 
         elif '/dispatch' in path:
-            status = 401
             dispatch_data = {
-                "orderId": postData["orderId"],
-                "vehicleId": "0",
-                "orderDestination": postData["orderDestination"],
+                "orderId": postData.get("orderId", None),
+                "vehicleId": "",
+                "orderDestination": postData.get("orderDestination", None),
                 "status": "processing"
             }
 
             dispatch = Dispatch(dispatch_data)
-            vehicleType = postData["vehicleType"]
+            vehicleType = postData.get("vehicleType", None)
 
-            cursor = db.Fleet.find({ "vType": vehicleType })
+            # Check and make sure order ID is not none and order destination is not none
+            if dispatch.orderId != None and dispatch.orderDestination != None and vehicleType != None:
+                # Avoid multiple duplicate dispatch of same order ID
+                if db.Dispatch.find_one({ "orderId": dispatch.orderId }) == None:
+                    vehicle_id = ""
+                    cursor = db.Fleet.find({ "vType": vehicleType })
+                    for fleet_data in cursor:
+                        fleet = Fleet(fleet_data)
+                        vehicle_data = fleet.findAvailableVehicle(db)
+                        if vehicle_data != {}:
+                            # once it finds a vehicle then save the id
+                            vehicle_id = vehicle_data.get("vehicleId", "")
+                            break
 
-            selected_fleet_data = None
-            vehicle_id = ""
-            for fleet_data in cursor:
-                fleet = Fleet(fleet_data)
-                vehicle_data = fleet.findAvailableVehicle(db)
-                if vehicle_data != {}:
-                    # once it finds a vehicle then save the id
-                    vehicle_id = vehicle_data["vehicleId"]
-                    break
+                    dispatch.vehicleId = vehicle_id
+                    db.Dispatch.insert_one({
+                        "_id": dispatch.id,
+                        "orderId": dispatch.orderId,
+                        "vehicleId": dispatch.vehicleId,
+                        "status": dispatch.status,
+                        "orderDestination": dispatch.orderDestination
+                    })
 
-            dispatch.vehicleId = vehicle_id
-            db.Dispatch.insert_one({
-                "_id": dispatch.id,
-                "orderId": dispatch.orderId,
-                "vehicleId": dispatch.vehicleId,
-                "status": dispatch.status,
-                "orderDestination": dispatch.orderDestination
-            })
-
-            if vehicle_id == "":
-                # add dispatch to queue because there was no available vehicles for it
-                dispatch_queue.put({ "dispatchId": dispatch.id, "vehicleType": vehicleType })
-            status = 201 # request is created
-            responseBody = {
-                'dispatch_status': dispatch.status,
-                'vehicleId': dispatch.vehicleId
-            }
-            # There was no vehicle available for the specific fleet, add to a queue
+                    if vehicle_id == "":
+                        # add dispatch to queue because there was no available vehicles for it
+                        dispatch_queue.put({ "dispatchId": dispatch.id, "vehicleType": vehicleType })
+                    status = 201 # request is created
+                    responseBody = {
+                        'dispatch_status': dispatch.status,
+                        'vehicleId': dispatch.vehicleId
+                    }
+                else:
+                    # if order id has already been dispatch, throw error
+                    status = 409
+                    responseBody = {
+                        'status': 'failed',
+                        'message': 'already dispatched order'
+                    }
 
         self.send_response(status)
         self.send_header("Content-Type", "text/html")

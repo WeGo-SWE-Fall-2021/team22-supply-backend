@@ -187,7 +187,7 @@ class ServerTestCase(unittest.TestCase):
 
     def test_order_create_new_dispatch_with_vehicle_request(self):
         payload = {
-            "orderId": "8965",
+            "orderId": "JOWJEFRH-JOEFE-KOEFOFRR",
             "orderDestination": "Austin, TX",
             "vehicleType": "food"
         }
@@ -239,7 +239,7 @@ class ServerTestCase(unittest.TestCase):
             "dock": "-97.731010,30.283930"
         }
         response = requests.post(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         expectedResponse = {
             'Heartbeat': 'Received'
             }
