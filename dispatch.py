@@ -101,13 +101,20 @@ class Dispatch:
             location = dictionary["location"]
         return location
 
+    def getDock(self, client):
+        db = client['team22_' + 'supply']
+        dictionary = db.Vehicle.find_one({'_id': self.vehicleId})
+        dock = ""
+        if dictionary is not None:
+            dock = dictionary["dock"]
+        return dock
     # Method Description: Sends a HTTP Request of Directions Mapbox API
     # pre-condition: "nothing??"
     # post-condition: returns the JSON response of Directions Mapbox API
     def requestDirections(self, client):
         forward_geocoding_json = self.requestForwardGeocoding()
         destination_coordinate = Dispatch.getCoordinateFromGeocodeResponse(forward_geocoding_json)
-        directionsURL = "https://api.mapbox.com/directions/v5/mapbox/driving/" + self.getVehicleLocation(client) + ";" + destination_coordinate + "?geometries=geojson&overview=full&steps=true&access_token=" + self.API_KEY
+        directionsURL = "https://api.mapbox.com/directions/v5/mapbox/driving/" + self.getDock(client) + ";" + destination_coordinate + "?geometries=geojson&overview=full&steps=true&access_token=" + self.API_KEY
         response = requests.get(directionsURL)
         directionsData = json.loads(response.text)
         return directionsData

@@ -48,7 +48,7 @@ vehicle_one = {
     'status' : 'ready',
     "vType": "food",
     "location": "-97.731010,30.283930",
-    "dock": "uhhh fix me pls",
+    "dock": "-97.731010,30.283930",
     "lastHeartbeat": "1234892919.655932"
 }
 
@@ -58,7 +58,7 @@ vehicle_two = {
     'status' : 'ready',
     "vType": "food",
     "location": "-97.731010,30.283930",
-    "dock": "uhhh fix me pls",
+    "dock": "-97.731010,30.283930",
     "lastHeartbeat": "1234892919.655932"
 }
 vehicle_three = {
@@ -67,7 +67,7 @@ vehicle_three = {
     'status' : 'busy',
     "vType": "food",
     "location": "-97.731010,30.283930",
-    "dock": "uhhh fix me pls",
+    "dock": "-97.731010,30.283930",
     "lastHeartbeat": "1234892919.655932"
 }
 dispatch_one = {
@@ -238,7 +238,7 @@ class ServerTestCase(unittest.TestCase):
             "vehicleId": "HUSERFEF-R3242-3453535-SFSFSFER243Z",
             'status': 'busy',
             "location": "-97.731010,30.283930",
-            "dock": "uhhh fix me pls"
+            "dock": "-97.731010,30.283930"
         }
         response = requests.post(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
         self.assertEqual(response.status_code, 200)
@@ -255,7 +255,7 @@ class ServerTestCase(unittest.TestCase):
             "vehicleId": "HUSERFEF-R3242-3453535-SFSFSFER242Y",
             'status' : 'ready',
             "location": "-97.731010,30.283930",
-            "dock": "uhhh fix me pls"
+            "dock": "-97.731010,30.283930"
             }
         requests.post(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
 
@@ -276,7 +276,7 @@ class ServerTestCase(unittest.TestCase):
             "vehicleId": "HUSERFEF-R3242-3453535-SFSFSFER243Z",
             'status': 'busy',
             "location": "-97.731010,30.283930",
-            "dock": "uhhh fix me pls"
+            "dock": "-97.731010,30.283930"
         }
         response = requests.post(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
         expectedResponse = {
@@ -290,7 +290,7 @@ class ServerTestCase(unittest.TestCase):
             "vehicleId": "HUSERFEF-R3242-3453535-SFSFSFER2420",
             'status': 'ready',
             "location": "-97.731010,30.283930",
-            "dock": "uhhh fix me pls"
+            "dock": "-97.731010,30.283930"
         }
         db.Dispatch.update_one({"_id": "455"}, {'$set': {"status": "processing"}})
         response = requests.post(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
@@ -308,7 +308,7 @@ class ServerTestCase(unittest.TestCase):
             "vehicleId": "HUSERFEF-R3242-3453535-SFSFSFER243Z",
             'status': 'busy',
             "location": dest,
-            "dock": "uhhh fix me pls"
+            "dock": "-97.731010,30.283930"
         }
         response = requests.post(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
         expectedStatus = "complete"
@@ -322,7 +322,7 @@ class ServerTestCase(unittest.TestCase):
             "vehicleId": "HUSERFEF-R3242-3453535-SFSFSFER243Z",
             'status': 'busy',
             "location": '-97.731010,30.283930',
-            "dock": "uhhh fix me pls"
+            "dock": "-97.731010,30.283930"
         }
         response = requests.post(f'http://localhost:{port}/vehicleHeartbeat', json=payload, timeout=10)
         expectedStatus = "in progress"
