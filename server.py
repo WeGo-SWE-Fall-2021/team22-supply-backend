@@ -285,7 +285,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 status = 200
 
         # getting vTypes of current fleets
-        elif 'getAllvTypes' in path:
+        elif '/getAllvTypes' in path:
             status = 403  # Not Authorized
             response = {
                 "message": "Not authorized"
@@ -303,6 +303,37 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
                 status = 200
                 response = vTypes
+
+        elif '/getKPIS' in path:
+            status = 403  # Not Authorized
+            response = {
+                "message": "Not authorized"
+            }
+            if fleetManager is not None:
+                kpiDict = {}
+                kpiDict["vehicleCount"] = 0
+                kpiDict["vehiclesReady"] = 0
+                kpiDict["vehiclesOOS"] = 0
+                kpiDict["vehiclesBusy"] = 0
+                kpiDict["fleetCount"] = 0
+                fleetManagerId = fleetManager.id
+                kpiDict["fleetCount"] = int(db.Fleet.find({"fleetMangerId": fleetManagerId}).count())
+                fleetIds = fleetManager.fleetIds
+                if len(fleetIds) == 0 :
+                    kpiDict["vehicleCount"] = 0
+                    kpiDict["vehiclesReady"] = 0
+                    kpiDict["vehiclesOOS"] = 0
+                    kpiDict["vehiclesBusy"] = 0
+                else:
+                    for fleetId in fleetIds:
+                        kpiDict["vehicleCount"] += int(db.Vehicle.find({"fleetId": fleetId}).count())
+                        kpiDict["vehiclesReady"] += int(db.Vehicle.find({"status": "ready","fleetId": fleetId}).count())
+                        kpiDict["vehiclesOOS"] += int(db.Vehicle.find({"status": "oos","fleetId": fleetId}).count())
+                        kpiDict["vehiclesBusy"] += int(db.Vehicle.find({"status": "busy","fleetId": fleetId}).count())
+                response = kpiDict
+                status = 200
+
+
 
         # vehicle request
         elif '/getAllVehicles' in path:

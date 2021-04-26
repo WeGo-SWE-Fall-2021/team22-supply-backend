@@ -152,7 +152,7 @@ class ServerTestCase(unittest.TestCase):
             'token': token
          }
         response = requests.post(f"http://localhost:{port}/fleet", cookies=cookies, json=payload, timeout=5)
-        fleetCount = db.Fleet.count()
+        fleetCount = db.Fleet.find().count()
         fleetManager1 = db.FleetManager.find_one({"_id": "1515646454"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.text)["fleetIds"], fleetManager1.get("fleetIds"))
@@ -374,7 +374,7 @@ class ServerTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.text)["totalVehicles"], 0)
 
-    def test_1_getAllvTypes(self):
+    def test_1_getAllKPIS(self):
         # Generate a jwt token
         token_secret = getenv("TOKEN_SECRET")
         token = jwt.encode({
@@ -383,8 +383,8 @@ class ServerTestCase(unittest.TestCase):
         cookies = {
             'token': token
         }
-        response = requests.get(f'http://localhost:{port}/getAllvTypes', cookies=cookies)
-        print(response.text)
+        response = requests.get(f'http://localhost:{port}/getKPIS', cookies=cookies)
+        self.assertEqual(len(json.loads(response.text)), 5)
 
     @classmethod
     def tearDownClass(cls):
