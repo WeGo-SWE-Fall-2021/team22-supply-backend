@@ -221,7 +221,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         dispatch_queue.put({ "dispatchId": dispatch.id, "vehicleType": vehicleType })
                     status = 201 # request is created
                     responseBody = {
-                        'dispatch_status': dispatch.status,
+                        'status': 'success',
+                        'message': 'Successfully dispatched order',
+                        'dispatchStatus': dispatch.status,
                         'vehicleId': dispatch.vehicleId
                     }
                 else:

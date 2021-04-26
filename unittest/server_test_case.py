@@ -210,7 +210,7 @@ class ServerTestCase(unittest.TestCase):
         }
         response = requests.post(f"http://localhost:{port}/dispatch", json=payload, timeout=5)
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(json.loads(response.text)["dispatch_status"], "processing")
+        self.assertEqual(json.loads(response.text)["dispatchStatus"], "processing")
         self.assertEqual(json.loads(response.text)["vehicleId"], "HUSERFEF-R3242-3453535-SFSFSFER242Y")
 
     def test_order_status_1(self):
