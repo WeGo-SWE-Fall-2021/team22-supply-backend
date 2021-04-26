@@ -332,14 +332,18 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     directions_response = dispatch.requestDirections(db)
                     geocode_response = dispatch.requestForwardGeocoding()
                     vehicle_current_location = dispatch.getVehicleLocation(db)
+                    dock_location = dispatch.getDock(db)
                     destination_coordinate = Dispatch.getCoordinateFromGeocodeResponse(geocode_response)
                     geometry = Dispatch.getGeometry(directions_response)
+                    eta = Dispatch.getETAFromDirectionsResponse(directions_response)
                     dispatches_data.append({
                         'orderId': dispatch.orderId,
                         'dispatchStatus': dispatch.status,
+                        'dock': dock_location,
                         'vehicleLocation': vehicle_current_location,
                         'destinationCoordinate': destination_coordinate,
-                        'geometry': geometry
+                        'geometry': geometry,
+                        'eta': eta
                     })
                 if len(dispatches_data) != 0:
                     status = 200

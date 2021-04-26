@@ -227,9 +227,11 @@ class ServerTestCase(unittest.TestCase):
         self.assertEqual(json_data['dispatches'], [{
             'orderId': payload["orderId"],
             'dispatchStatus': dispatch.status,
+            'dock': dispatch.getDock(db),
             'vehicleLocation': dispatch.getVehicleLocation(db),
             'destinationCoordinate': Dispatch.getCoordinateFromGeocodeResponse(geocode_response),
-            'geometry': Dispatch.getGeometry(directions_response)
+            'geometry': Dispatch.getGeometry(directions_response),
+            'eta': Dispatch.getETAFromDirectionsResponse(directions_response)
         }])
 
     def test_VSIM_getAllVehicles_GET_Endpoint(self):
