@@ -317,8 +317,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 kpiDict["vehiclesBusy"] = 0
                 kpiDict["fleetCount"] = 0
                 fleetManagerId = fleetManager.id
-                kpiDict["fleetCount"] = int(db.Fleet.find({"fleetMangerId": fleetManagerId}).count())
                 fleetIds = fleetManager.fleetIds
+                kpiDict["fleetCount"] = int(len(fleetIds))
                 if len(fleetIds) == 0 :
                     kpiDict["vehicleCount"] = 0
                     kpiDict["vehiclesReady"] = 0
