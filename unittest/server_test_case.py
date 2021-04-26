@@ -372,7 +372,17 @@ class ServerTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.text)["totalVehicles"], 0)
 
-
+    def test_1_getAllvTypes(self):
+        # Generate a jwt token
+        token_secret = getenv("TOKEN_SECRET")
+        token = jwt.encode({
+            "user_id": fleet_manager_data_one["_id"]
+        }, token_secret, algorithm="HS256")
+        cookies = {
+            'token': token
+        }
+        response = requests.get(f'http://localhost:{port}/getAllvTypes', cookies=cookies)
+        print(response.text)
 
     @classmethod
     def tearDownClass(cls):

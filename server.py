@@ -282,6 +282,22 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 response = fleetArray
                 status = 200
 
+        # getting vTypes of current fleets
+        elif 'getAllvTypes' in path:
+            status = 403  # Not Authorized
+            response = {
+                "message": "Not authorized"
+            }
+            if fleetManager is not None:
+                fleetIds = fleetManager.fleetIds
+                vTypes = []
+                for fleetId in fleetIds:
+                    fleet = db.Fleet.find_one({'_id': fleetId})
+                    vType = fleet['vType']
+                    vTypes.append(vType)
+                status = 200
+                response = vTypes
+
         # vehicle request
         elif '/getAllVehicles' in path:
             vehicles = []
