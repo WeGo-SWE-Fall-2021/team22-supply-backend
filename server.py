@@ -291,12 +291,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if fleetManager is not None:
                 fleetIds = fleetManager.fleetIds
                 vTypes = []
+                if len(vTypes) == 0:
+                    vTypes.append("There are no fleets yet")
                 for fleetId in fleetIds:
                     fleet = db.Fleet.find_one({'_id': fleetId})
                     vType = fleet['vType']
                     vTypes.append(vType)
-                if len(vTypes) == 0:
-                    vTypes.append("There are no fleets yet")
+
                 status = 200
                 response = vTypes
 
