@@ -64,8 +64,14 @@ class Fleet():
         db.Fleet.update_one({'_id': self.id}, {"$set": {'totalVehicles': totalVehiclesInt}})
 
     def deleteVehicle(self, db, vehicleId):
-        db.Vehicle.delete_one({"_id": vehicleId, "fleetId": self.id})
-        totalVehiclesInt = self.totalVehicles - 1
-        self.totalVehicles = totalVehiclesInt
-        db.Fleet.update_one({'_id': self.id}, {"$set": {'totalVehicles': totalVehiclesInt}})
+        foundDispatch = list(db.Dispatch.find({"vehicleId" : vehicleId , "status": {"$ne" : "complete"}}))
+
+        if len(foundDispatch) != 0:
+            return "This vehicle is on a route \n Please delete after the route is complete"
+        else:
+            db.Vehicle.delete_one({"_id": vehicleId})
+            totalVehiclesInt = self.totalVehicles - 1
+            self.totalVehicles = totalVehiclesInt
+            db.Fleet.update_one({'_id': self.id}, {"$set": {'totalVehicles': totalVehiclesInt}})
+            return "successfully deleted"
 

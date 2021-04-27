@@ -68,6 +68,7 @@ vehicle_two = {
     "dock": "-97.731010,30.283930",
     "lastHeartbeat": "1234892919.655932"
 }
+
 vehicle_three = {
     "_id": "HUSERFEF-R3242-3453535-SFSFSFER243Z",
     "fleetId": fleet_one["_id"],
@@ -109,6 +110,14 @@ dispatch_three = {
     "orderDestination": "3001 S Congress Ave, Austin, TX 78704"
 }
 
+dispatch_four = {
+    "_id": "789",
+    "orderId": "124",
+    "vehicleId": vehicle_four["_id"],
+    "status": "in progress",
+    "orderDestination": "3001 S Congress Ave, Austin, TX 78704"
+}
+
 client = initMongoFromCloud("supply")
 db = client["team22_supply"]
 
@@ -133,6 +142,7 @@ class ServerTestCase(unittest.TestCase):
         db.Dispatch.insert_one(dispatch_one)
         db.Dispatch.insert_one(dispatch_two)
         db.Dispatch.insert_one(dispatch_three)
+        db.Dispatch.insert_one(dispatch_four)
         db.Vehicle.insert_one(vehicle_one)
         db.Vehicle.insert_one(vehicle_two)
         db.Vehicle.insert_one(vehicle_three)
@@ -371,7 +381,7 @@ class ServerTestCase(unittest.TestCase):
         }
         response = requests.post(f'http://localhost:{port}/deleteVehicle',cookies = cookies, json=payload, timeout=10)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(json.loads(response.text)["totalVehicles"], 0)
+        self.assertEqual(json.loads(response.text)["totalVehicles"], 1)
 
     def test_1_getAllKPIS(self):
         # Generate a jwt token

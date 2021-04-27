@@ -163,9 +163,10 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if fleetManager is not None:
                 status = 200
                 fleet = fleetManager.accessFleet(db, vType)
-                fleet.deleteVehicle(db, vehicleId)
+                deleteResponse = fleet.deleteVehicle(db, vehicleId)
                 responseBody = {
                     "totalVehicles" : fleet.totalVehicles,
+                    "alertResponse" : deleteResponse
                 }
 
 
