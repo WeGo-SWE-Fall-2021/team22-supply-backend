@@ -17,7 +17,6 @@ from queue import PriorityQueue
 
 load_dotenv()
 
-dispatch_queue = PriorityQueue()
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     version = '0.2.0'
@@ -82,17 +81,16 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 # Find a dispatch document from DB where vehicleId = vehicleId from postData that is not complete
                 dispatch_data = db.Dispatch.find_one({"vehicleId": vehicleId, "status": {'$ne': "complete"}})
 
-                if dispatch_data == None and not dispatch_queue.empty():
+                if dispatch_data == None:
                     '''if vehicle is not assigned to a dispatch that says either 'processing' or 'in progress', 
-                    then check if dispatch queue can assign the vehicle to a new dispatch if it's ready
+                    then check if there is a dispatch with no vehicle ID assigned
                     '''
                     vehicle_data = db.Vehicle.find_one({ "_id": vehicleId, "status": "ready" })
-                    dispatch_dict = dispatch_queue.get()
-                    if vehicle_data is not None and vehicle_data["vType"] == dispatch_dict["vehicleType"]:
-                        dispatch_data = db.Dispatch.find_one({ "_id": dispatch_dict["dispatchId"], "vehicleId": "" })
+                    dispatch_data = db.Dispatch.find_one({ "vehicleId": "" }, { "_id": 1, "vehicleType": 1 } );
+                    if vehicle_data is not None and dispatch_data is not None and vehicle_data["vType"] == dispatch_data["vehicleType"]:
+                        dispatch_data = db.Dispatch.update_one({ "_id": dispatch_data["_id"] }, { "$set": vehicleId })
                         dispatch_data["vehicleId"] = vehicleId
-                    else:
-                        dispatch_queue.put((1, dispatch_dict))
+
                 # dispatch status is processing responseBody -> heartbeat received, send coordinates
                 # dispatch status is in progress responseBody -> heartbeat received, send coordinates
                 # dispatch status is complete responseBody -> heartbeat received
@@ -215,12 +213,10 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         "orderId": dispatch.orderId,
                         "vehicleId": dispatch.vehicleId,
                         "status": dispatch.status,
-                        "orderDestination": dispatch.orderDestination
+                        "orderDestination": dispatch.orderDestination,
+                        "vehicleType": vehicleType
                     })
 
-                    if vehicle_id == "":
-                        # add dispatch to queue because there was no available vehicles for it
-                        dispatch_queue.put({ "dispatchId": dispatch.id, "vehicleType": vehicleType })
                     status = 201 # request is created
                     responseBody = {
                         'status': 'success',
