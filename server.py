@@ -86,9 +86,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     then check if there is a dispatch with no vehicle ID assigned
                     '''
                     vehicle_data = db.Vehicle.find_one({ "_id": vehicleId, "status": "ready" })
-                    dispatch_data = db.Dispatch.find_one({ "vehicleId": "" }, { "_id": 1, "vehicleType": 1 } );
+                    dispatch_data = db.Dispatch.find_one({ "vehicleId": "" });
                     if vehicle_data is not None and dispatch_data is not None and vehicle_data["vType"] == dispatch_data["vehicleType"]:
-                        dispatch_data = db.Dispatch.update_one({ "_id": dispatch_data["_id"] }, { "$set": { "vehicleId": vehicleId } })
+                        db.Dispatch.update_one({ "_id": dispatch_data["_id"] }, { "$set": { "vehicleId": vehicleId } })
                         dispatch_data["vehicleId"] = vehicleId
 
                 # dispatch status is processing responseBody -> heartbeat received, send coordinates
