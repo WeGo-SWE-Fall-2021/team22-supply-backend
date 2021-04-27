@@ -176,8 +176,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             #get correct fleet and add vehicle to it
             if fleetManager is not None:
                 status = 200
+                dockCoordinates = fleetManager.dockCoordinates
                 fleet = fleetManager.accessFleet(db, postData['vType'])
-                fleet.addVehicle(db, postData)
+                fleet.addVehicle(db, postData,dockCoordinates)
                 responseBody = {
                     "totalVehicles": fleet.totalVehicles
                 }

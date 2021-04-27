@@ -48,14 +48,14 @@ class Fleet():
         return returnDict
 
     #addes vehicle to vehicle collection
-    def addVehicle(self, db, postData):
+    def addVehicle(self, db, postData, dockCoordinates):
         vehicleInfo = postData
         vehicle = db.Vehicle.insert_one({
             '_id': str(uuid4()),
             'fleetId': self._id,
             'status' : vehicleInfo['status'],
-            'location': vehicleInfo['dock'],
-            'dock': vehicleInfo['dock'],
+            'location': dockCoordinates,
+            'dock': dockCoordinates,
             'lastHeartbeat': str(time.time()),
             'vType' : vehicleInfo['vType']
         })

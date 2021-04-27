@@ -15,7 +15,7 @@ class FleetManagerTestCase(unittest.TestCase):
             "email": "email@email.com",
             "username": "user",
             "password": "pwdtest",
-            "dockNumber": "testDockNum",
+            "dockCoordinates": "testDock",
             "dockAddress": "testAddress",
             "fleetIds": ["123", "321"]
         }
@@ -30,7 +30,7 @@ class FleetManagerTestCase(unittest.TestCase):
             "email": "email@email.com",
             "username": "user",
             "password": "pwdtest",
-            "dockNumber": "testDockNum",
+            "dockCoordinates": "testDock",
             "dockAddress": "testAddress",
             "fleetIds": ["123", "321"]
         }
@@ -42,7 +42,7 @@ class FleetManagerTestCase(unittest.TestCase):
         self.assertEqual(fleetManager.email, "email@email.com")
         self.assertEqual(fleetManager.username, "user")
         self.assertEqual(fleetManager.password, "pwdtest")
-        self.assertEqual(fleetManager.dockNumber, "testDockNum")
+        self.assertEqual(fleetManager.dockCoordinates, "testDock")
         self.assertEqual(fleetManager.dockAddress, "testAddress")
         self.assertEqual(fleetManager.fleetIds, ["123", "321"])
 
@@ -55,7 +55,7 @@ class FleetManagerTestCase(unittest.TestCase):
             "email": "email@email.com",
             "username": "user",
             "password": "pwdtest",
-            "dockNumber": "testDockNum",
+            "dockCoordinates": "testDock",
             "dockAddress": "testAddress",
             "fleetIds": ["123", "321"]
         }
@@ -72,8 +72,8 @@ class FleetManagerTestCase(unittest.TestCase):
         self.assertEqual(fleetManager.lastName, "newlastname")
         fleetManager.phoneNumber = "00000"
         self.assertEqual(fleetManager.phoneNumber, "00000")
-        fleetManager.dockNumber = "W123"
-        self.assertEqual(fleetManager.dockNumber, "W123")
+        fleetManager.dockCoordinates = "W123"
+        self.assertEqual(fleetManager.dockCoordinates, "W123")
         fleetManager.dockAddress = "123 test"
         self.assertEqual(fleetManager.dockAddress, "123 test")
         fleetManager.fleetIds = []

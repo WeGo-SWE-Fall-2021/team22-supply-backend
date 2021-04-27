@@ -31,7 +31,7 @@ fleet_manager_data_one = {
     "username": "test_username",
     "password": "test_password",
     "dockAddress": "addy",
-    "dockNumber": "number", 
+    "dockCoordinates": "-97.731010,30.283930",
     "fleetIds": ["123","123456789"]
 }
 
@@ -163,7 +163,6 @@ class ServerTestCase(unittest.TestCase):
         payload = {
             'status': 'ready',
             "vType": "food",
-            "dock": "dock address",
         }
 
         # Generate a jwt token

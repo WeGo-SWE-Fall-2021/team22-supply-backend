@@ -18,18 +18,18 @@ class FleetManager(User):
     # inherents parent attributes
     def __init__(self, dict):
         super().__init__(dict)
-        self._dockNumber = dict["dockNumber"]
+        self._dockCoordinates = dict["dockCoordinates"]
         self._dockAddress = dict["dockAddress"]
         self._fleetIds = dict["fleetIds"]
 
     #---------- setters & getters -----------
     @property
-    def dockNumber(self):
-        return self._dockNumber
+    def dockCoordinates(self):
+        return self._dockCoordinates
 
-    @dockNumber.setter
-    def dockNumber(self, dockNum):
-        self._dockNumber = dockNum
+    @dockCoordinates.setter
+    def dockCoordinates(self, dockNum):
+        self._dockCoordinates = dockNum
 
     @property
     def dockAddress(self):
