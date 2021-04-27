@@ -88,7 +88,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     vehicle_data = db.Vehicle.find_one({ "_id": vehicleId, "status": "ready" })
                     dispatch_data = db.Dispatch.find_one({ "vehicleId": "" }, { "_id": 1, "vehicleType": 1 } );
                     if vehicle_data is not None and dispatch_data is not None and vehicle_data["vType"] == dispatch_data["vehicleType"]:
-                        dispatch_data = db.Dispatch.update_one({ "_id": dispatch_data["_id"] }, { "$set": vehicleId })
+                        dispatch_data = db.Dispatch.update_one({ "_id": dispatch_data["_id"] }, { "$set": { "vehicleId": vehicleId } })
                         dispatch_data["vehicleId"] = vehicleId
 
                 # dispatch status is processing responseBody -> heartbeat received, send coordinates
