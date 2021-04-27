@@ -362,13 +362,20 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 for dispatch_data in cursor:
                     dispatch = Dispatch(dispatch_data)
                     # Get directions API and geocde API responses stored in variables
-                    directions_response = dispatch.requestDirections(db)
-                    geocode_response = dispatch.requestForwardGeocoding()
-                    vehicle_current_location = dispatch.getVehicleLocation(db)
-                    dock_location = dispatch.getDock(db)
-                    destination_coordinate = Dispatch.getCoordinateFromGeocodeResponse(geocode_response)
-                    geometry = Dispatch.getGeometry(directions_response)
-                    eta = Dispatch.getETAFromDirectionsResponse(directions_response)
+                    vehicle_current_location = ""
+                    dock_location = ""
+                    eta = 0
+                    geometry = {}
+                    destination_coordinate = ""
+                    if dispatch.vehicleId != "":
+                        directions_response = dispatch.requestDirections(db)
+                        geocode_response = dispatch.requestForwardGeocoding()
+                        vehicle_current_location = dispatch.getVehicleLocation(db)
+                        dock_location = dispatch.getDock(db)
+                        destination_coordinate = Dispatch.getCoordinateFromGeocodeResponse(geocode_response)
+                        geometry = Dispatch.getGeometry(directions_response)
+                        eta = Dispatch.getETAFromDirectionsResponse(directions_response)
+
                     dispatches_data.append({
                         'orderId': dispatch.orderId,
                         'dispatchStatus': dispatch.status,
