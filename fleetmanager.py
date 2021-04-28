@@ -67,7 +67,7 @@ class FleetManager(User):
         db.FleetManager.update({'_id': self._id}, {'$push': {'fleetIds': fleetID}})
         fleetIDArray = self._fleetIds
         fleetIDArray.append(fleetID)
-        self._fleetIds = fleetIDArray
+        self.fleetIds = fleetIDArray
 
     # find and return the correct fleet based on the vType it is given
     def accessFleet(self, db, vType):

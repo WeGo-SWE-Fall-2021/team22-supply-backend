@@ -309,29 +309,41 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             }
             if fleetManager is not None:
                 kpiDict = {}
+                fleetManagerId = fleetManager.id
+                fleetIds = fleetManager.fleetIds
                 kpiDict["vehicleCount"] = 0
                 kpiDict["vehiclesReady"] = 0
                 kpiDict["vehiclesOOS"] = 0
                 kpiDict["vehiclesBusy"] = 0
                 kpiDict["fleetCount"] = 0
-                fleetManagerId = fleetManager.id
-                fleetIds = fleetManager.fleetIds
-                kpiDict["fleetCount"] = int(len(fleetIds))
-                if len(fleetIds) == 0 :
-                    kpiDict["vehicleCount"] = 0
-                    kpiDict["vehiclesReady"] = 0
-                    kpiDict["vehiclesOOS"] = 0
-                    kpiDict["vehiclesBusy"] = 0
+                if len(fleetIds) == 0:
+                    foodFleetInfo = {
+                        "totalVehicles": 0,
+                        "vType": "food"
+                    }
+                    fleetManager.addFleet(db, foodFleetInfo)
+                    kpiDict["fleetCount"] += 1
+                    storageFleetInfo = {
+                        "totalVehicles": 0,
+                        "vType": "storage"
+                    }
+                    fleetManager.addFleet(db, storageFleetInfo)
+                    kpiDict["fleetCount"] += 1
+                    refrigeratedFleetInfo = {
+                        "totalVehicles": 0,
+                        "vType": "refrigerated"
+                    }
+                    fleetManager.addFleet(db, refrigeratedFleetInfo)
+                    kpiDict["fleetCount"] += 1
                 else:
                     for fleetId in fleetIds:
+                        kpiDict["fleetCount"] += int(db.Fleet.find({"fleetId": fleetId}).count())
                         kpiDict["vehicleCount"] += int(db.Vehicle.find({"fleetId": fleetId}).count())
-                        kpiDict["vehiclesReady"] += int(db.Vehicle.find({"status": "ready","fleetId": fleetId}).count())
-                        kpiDict["vehiclesOOS"] += int(db.Vehicle.find({"status": "oos","fleetId": fleetId}).count())
-                        kpiDict["vehiclesBusy"] += int(db.Vehicle.find({"status": "busy","fleetId": fleetId}).count())
+                        kpiDict["vehiclesReady"] += int(db.Vehicle.find({"status": "ready", "fleetId": fleetId}).count())
+                        kpiDict["vehiclesOOS"] += int(db.Vehicle.find({"status": "oos", "fleetId": fleetId}).count())
+                        kpiDict["vehiclesBusy"] += int(db.Vehicle.find({"status": "busy", "fleetId": fleetId}).count())
                 response = kpiDict
                 status = 200
-
-
 
         # vehicle request
         elif '/getAllVehicles' in path:

@@ -35,6 +35,19 @@ fleet_manager_data_one = {
     "fleetIds": ["123","123456789"]
 }
 
+fleet_manager_data_two = {
+    "_id": "420420",
+    "firstName": "test_firstName",
+    "lastName": "test_lastName",
+    "phoneNumber": "test_phoneNumber",
+    "email": "test@test.com",
+    "username": "test_username",
+    "password": "test_password",
+    "dockAddress": "addy",
+    "dockCoordinates": "-97.731010,30.283930",
+    "fleetIds": []
+}
+
 fleet_one = {
     "_id": "123",
     "fleetManagerId": fleet_manager_data_one["_id"],
@@ -137,6 +150,7 @@ class ServerTestCase(unittest.TestCase):
         cls._server_thread.start()
 
         db.FleetManager.insert_one(fleet_manager_data_one)
+        db.FleetManager.insert_one(fleet_manager_data_two)
         db.Fleet.insert_one(fleet_one)
         db.Fleet.insert_one(fleet_two)
         db.Dispatch.insert_one(dispatch_one)
@@ -394,6 +408,22 @@ class ServerTestCase(unittest.TestCase):
         }
         response = requests.get(f'http://localhost:{port}/getKPIS', cookies=cookies)
         self.assertEqual(len(json.loads(response.text)), 5)
+
+    def test_2_getAllKPIS(self):
+        # Generate a jwt token
+        token_secret = getenv("TOKEN_SECRET")
+        token = jwt.encode({
+            "user_id": fleet_manager_data_two["_id"]
+        }, token_secret, algorithm="HS256")
+        cookies = {
+            'token': token
+        }
+        response = requests.get(f'http://localhost:{port}/getKPIS', cookies=cookies)
+        self.assertEqual(len(json.loads(response.text)), 5)
+        self.assertEqual(json.loads(response.text)["fleetCount"], 3)
+        fleetManger2 = db.FleetManager.find_one({"_id" : "420420"})
+        fleetIds = fleetManger2["fleetIds"]
+        self.assertEqual(len(fleetIds), 3)
 
     @classmethod
     def tearDownClass(cls):
