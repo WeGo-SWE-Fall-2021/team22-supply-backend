@@ -94,23 +94,25 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 # dispatch status is processing responseBody -> heartbeat received, send coordinates
                 # dispatch status is in progress responseBody -> heartbeat received, send coordinates
                 # dispatch status is complete responseBody -> heartbeat received
-                if dispatch_data is not None and dispatch_data["vehicleId"] is not None:
+                if dispatch_data is not None and dispatch_data["vehicleId"] is not None and dispatch_data["vehicleId"] != "":
                     dispatch = Dispatch(dispatch_data)
                     directions_response = dispatch.requestDirections(db)
                     coordinates = Dispatch.getRouteCoordinates(directions_response)
+                    last_coordinate = coordinates[len(coordinates)-1]
+                    last_coordinate_string = f"{last_coordinate[0]},{last_coordinate[1]}"
                     dispatch.status= "in progress" # Change dispatch status -> in progress
+
+                    # check if vehicle coordinate == order location
+                    if location == last_coordinate_string:
+                        dispatch.status = "complete"
+
                     db.Dispatch.update_one({"_id": dispatch.id}, {'$set': {"status": dispatch.status, "vehicleId": vehicleId }})
+
                     responseBody = {
                         'Heartbeat': 'Received',
                         'coordinates': coordinates,  # [ [90.560,45.503], [90.560,45.523] ]
                         'duration': directions_response["routes"][0]["legs"][0]["duration"]
                     }
-                    last_coordinate = coordinates[len(coordinates)-1]
-                    last_coordinate_string = f"{last_coordinate[0]},{last_coordinate[1]}"
-                    # check if vehicle coordinate == order location
-                    if location == last_coordinate_string:
-                        dispatch.status = "complete"
-                        db.Dispatch.update_one({"_id": dispatch.id}, {'$set': {"status": dispatch.status}})                    
 
                 status = 200 # DatabaseUpdated 
 
