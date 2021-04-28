@@ -337,7 +337,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     kpiDict["fleetCount"] += 1
                 else:
                     for fleetId in fleetIds:
-                        kpiDict["fleetCount"] += int(db.Fleet.find({"fleetId": fleetId}).count())
+                        kpiDict["fleetCount"] += int(db.Fleet.find({"_id": fleetId}).count())
                         kpiDict["vehicleCount"] += int(db.Vehicle.find({"fleetId": fleetId}).count())
                         kpiDict["vehiclesReady"] += int(db.Vehicle.find({"status": "ready", "fleetId": fleetId}).count())
                         kpiDict["vehiclesOOS"] += int(db.Vehicle.find({"status": "oos", "fleetId": fleetId}).count())
