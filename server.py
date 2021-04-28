@@ -94,7 +94,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 # dispatch status is processing responseBody -> heartbeat received, send coordinates
                 # dispatch status is in progress responseBody -> heartbeat received, send coordinates
                 # dispatch status is complete responseBody -> heartbeat received
-                if dispatch_data is not None:
+                if dispatch_data is not None and dispatch_data["vehicleId"] is not None:
                     dispatch = Dispatch(dispatch_data)
                     directions_response = dispatch.requestDirections(db)
                     coordinates = Dispatch.getRouteCoordinates(directions_response)
