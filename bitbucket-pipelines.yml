@@ -129,4 +129,4 @@ pipelines:
           clone:
              enabled: false
           script:
-            - ssh -A -tt -i /opt/atlassian/pipelines/agent/ssh/id_rsa -o 'StrictHostKeyChecking=no' -p ${PORT:-22} $USER@$SUPPLY_SERVER "bash -c '/home/team22/webhooks/team22-redeploy.sh ${BITBUCKET_REPO_SLUG} ${BITBUCKET_COMMIT}'"
+            - ssh -A -tt -i /opt/atlassian/pipelines/agent/ssh/id_rsa -o 'StrictHostKeyChecking=no' -p ${PORT:-22} $USER@supply.team22.sweispring21.tk "bash -c '/home/team22/webhooks/team22-redeploy.sh ${BITBUCKET_REPO_SLUG} ${BITBUCKET_COMMIT}'"
