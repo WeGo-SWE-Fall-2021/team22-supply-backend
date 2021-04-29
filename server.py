@@ -397,19 +397,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                         'geometry': geometry,
                         'eta': eta
                     })
-                if len(dispatches_data) != 0:
-                    status = 200
-                    response = {
-                        'status': 'success',
-                        'message': 'Retrieved dispatches information',
-                        'dispatches': dispatches_data
-                    }
-                else:
-                    status = 404 # Yes, I know this is used for files not found but technically this data wasnt found either
-                    response = {
-                        'status':  'failed', # Was able to parse request but there was no data found
-                        'message': 'There was no dispatches within the given order ids.'
-                    }
+
+                status = 200
+                response = {
+                    'status': 'success',
+                    'message': 'Retrieved dispatches information',
+                    'dispatches': dispatches_data
+                }
+
         elif '/getVehicleLocation' in path:
             vehicleid = parameters.get('vehicleId', None)
             if vehicleid is not None:
